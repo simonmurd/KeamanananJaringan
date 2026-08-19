@@ -44,20 +44,6 @@
             background: #94a3b8;
         }
     </style>
-    <!-- Chosen Palette: Warm Professional Slate & Indigo/Purple (Indigo-600 accents, Slate-900 header, Teal-600 success states) -->
-    <!-- Application Structure Plan: Integrated Educational LKPD Web App with Google Apps Script Submission Engine:
-         1. Student Identity & Timer Module: Form for School, Class, Student Name selection, Start Timer button, and Web App URL settings.
-         2. Dashboard & Analytics: Overview metrics and interactive Charts (Chart.js) for network compliance & incident trends.
-         3. Detektif Kebijakan: Interactive scenario simulator with scoring.
-         4. Pelaporan Insiden: Step-by-step incident reporting wizard and ticket generator.
-         5. Generator KPJ: Automated network policy document generator.
-         6. Evaluasi LKPD: 10 Complex Multiple Choice Questions + 5 Analytical Essay Questions with automated scoring.
-         7. Submission Action Bar: Fixed bottom toolbar with Reset Form and Direct Google Apps Script POST integration. -->
-    <!-- Visualization & Content Choices:
-         - Student Identity & Web App URL Config -> Dynamic HTML Form Controls -> Goal: Capture student info and bind to Apps Script.
-         - Donut & Bar Charts -> Chart.js Canvas -> Goal: High performance visual reporting -> No SVG used.
-         - Apps Script Integration -> Asynchronous Fetch POST API -> Goal: Send score, answers, and time logs directly to Google Sheets. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased">
 
@@ -132,42 +118,31 @@
                     </button>
                 </div>
                 <p class="text-[11px] text-slate-500">
-                    💡 Tempelkan Web App URL dari Google Apps Script yang telah Anda Deploy. URL ini akan tersimpan secara otomatis di browser Anda.
+                    💡 Tempelkan Web App URL dari Google Apps Script yang telah Anda Deploy. URL ini akan tersimpan secara otomatis.
                 </p>
             </div>
 
-            <!-- Form Dropdowns Grid -->
+            <!-- Form Dropdowns Grid (Using IDs from User's CSV Script) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Pilih Sekolah</label>
-                    <select id="student-school" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
-                        <option value="SMK NEGERI 1 SINGKAWANG">SMK NEGERI 1 SINGKAWANG</option>
-                        <option value="SMK NEGERI 2 SINGKAWANG">SMK NEGERI 2 SINGKAWANG</option>
-                        <option value="SMK NEGERI 3 SINGKAWANG">SMK NEGERI 3 SINGKAWANG</option>
-                        <option value="SMK LAINNYA">SMK LAINNYA</option>
+                    <select id="inputSekolah" onchange="filterKelas()" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
+                        <option value="">-- Pilih Sekolah --</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Kelas</label>
-                    <select id="student-class" onchange="updateStudentNameDropdown()" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
+                    <select id="inputKelas" onchange="filterNama()" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
                         <option value="">-- Pilih Kelas --</option>
-                        <option value="XI TKJ 1">XI TKJ 1</option>
-                        <option value="XI TKJ 2">XI TKJ 2</option>
-                        <option value="XII TKJ 1">XII TKJ 1</option>
-                        <option value="XII TKJ 2">XII TKJ 2</option>
-                        <option value="Manual Input">-- Ketik Nama Manual --</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Nama Lengkap</label>
-                    <div id="student-name-container">
-                        <select id="student-name-select" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
-                            <option value="">-- Pilih Nama --</option>
-                        </select>
-                        <input type="text" id="student-name-input" placeholder="Masukkan Nama Lengkap Siswa" class="hidden w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
-                    </div>
+                    <select id="inputNamaLengkap" class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all">
+                        <option value="">-- Pilih Nama --</option>
+                    </select>
                 </div>
             </div>
 
@@ -655,28 +630,165 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Global Data Roster Siswa per Kelas
-        const classStudents = {
-            "XI TKJ 1": ["Ahmad Rizky", "Aulia Nabila", "Bagus Prasetyo", "Citra Kirana", "Dian Sastro", "Eko Yulianto", "Fajar Budi", "Gita Gutawa"],
-            "XI TKJ 2": ["Hendra Wijaya", "Indah Permata", "Joko Susilo", "Kiki Amalia", "Lesti Kejora", "Muhammad Fajar", "Nia Ramadhani", "Oki Setiana"],
-            "XII TKJ 1": ["Panji Petualang", "Qory Sandioriva", "Rafi Ahmad", "Siti Badriah", "Tukul Arwana", "Uut Permatasari", "Vina Panduwinata"],
-            "XII TKJ 2": ["Wahyu Hidayat", "Xena Warrior", "Yuni Shara", "Zaskia Gotik", "Zulham Zamrun"]
-        };
+        // Constants & Config
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+        let appsScriptUrl = localStorage.getItem('lkpd_apps_script_url') || DEFAULT_SCRIPT_URL;
+
+        // Data Base Siswa
+        let masterDataSiswa = [];
+        const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
 
         // Application State Variables
         let currentTab = 'dashboard';
         let detectiveScore = 0;
         let currentCaseIndex = 0;
         let currentWizardStep = 1;
+        let answeredCases = new Set();
 
         // Timer State Variables
         let timerInterval = null;
         let secondsElapsed = 0;
         let isTimerRunning = false;
         let lkpdStartTimeStr = "";
-
-        // Apps Script Config
-        let appsScriptUrl = localStorage.getItem('lkpd_apps_script_url') || "";
 
         // Data Case Study Detektif Kebijakan
         const caseData = [
@@ -882,7 +994,7 @@
                     { id: 'E', text: "E. Kenaikan harga lisensi perangkat lunak resmi di pasaran global." }
                 ],
                 correctAnswers: ['A', 'B'],
-                explanation: "Dampak non-ekonomi meliput hilangnya reputasi publik (A) dan terganggunya kenyamanan moral kerja (B)."
+                explanation: "Dampak non-ekonomi meliputi hilangnya reputasi publik (A) dan terganggunya kenyamanan moral kerja (B)."
             }
         ];
 
@@ -892,7 +1004,7 @@
                 id: 1,
                 title: "1. Hubungan antara Kebijakan dan Keamanan Teknis",
                 question: "Kebijakan Penggunaan Jaringan sering kali dianggap hanya sebagai dokumen administratif. Jelaskan argumen Anda mengapa Kebijakan Penggunaan Jaringan merupakan fondasi krusial bagi keamanan siber, dan bagaimana sebuah kebijakan yang baik dapat mencegah serangan siber bahkan sebelum alat teknis bekerja!",
-                rubric: "Indikator Jawaban Baik: Menjelaskan bahwa manusia adalah mata rantai terlemah (human factor). Kebijakan memandu perilaku aman pengguna, mencegah kelalaian seperti mengklik link phishing atau password lemah."
+                rubric: "Indikator Jawaban Baik: Menjelaskan bahwa manusia adalah mata rantai terlemah (human factor). Kebijakan memandu perilaku aman pengguna, mencegah kelalaian seperti mengklik link phishing atau menggunakan password lemah."
             },
             {
                 id: 2,
@@ -920,19 +1032,37 @@
             }
         ];
 
-        // Initialize App
+        // Initialize App on DOM Load
         document.addEventListener("DOMContentLoaded", () => {
+            // Load CSV Data
+            const baris = csvDataSiswa.trim().split('\n');
+            masterDataSiswa = [];
+            for(let i = 1; i < baris.length; i++) {
+                const kolom = baris[i].split(',');
+                if(kolom.length >= 3) {
+                    masterDataSiswa.push({
+                        sekolah: kolom[0].trim(),
+                        kelas: kolom[1].trim(),
+                        nama: kolom[2].trim()
+                    });
+                }
+            }
+            
+            // Populate Dropdowns
+            inisialisasiDropdownSekolah();
+
+            // Setup Apps Script URL
+            if (appsScriptUrl) {
+                document.getElementById('app-script-url').value = appsScriptUrl;
+            }
+
+            // Init Sub-modules
             initCharts();
             renderCaseButtons();
             loadCase(0);
             generatePolicy();
             renderQuiz();
             renderEssay();
-
-            // Populate Apps Script URL if saved
-            if (appsScriptUrl) {
-                document.getElementById('app-script-url').value = appsScriptUrl;
-            }
         });
 
         // Toggle Apps Script Configuration Area
@@ -953,48 +1083,70 @@
             toggleScriptUrlConfig();
         }
 
-        // Student Name Dropdown Engine
-        function updateStudentNameDropdown() {
-            const selectedClass = document.getElementById('student-class').value;
-            const selectEl = document.getElementById('student-name-select');
-            const inputEl = document.getElementById('student-name-input');
+        // Dropdown Handlers (User CSV Based)
+        function inisialisasiDropdownSekolah() {
+            const selectSekolah = document.getElementById('inputSekolah');
+            const sekolahTerpilihSebelumnya = selectSekolah.value;
+            const sekolahUnik = [...new Set(masterDataSiswa.map(item => item.sekolah))];
+            
+            selectSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+            sekolahUnik.forEach(sekolah => {
+                const opt = document.createElement('option');
+                opt.value = sekolah;
+                opt.textContent = sekolah;
+                selectSekolah.appendChild(opt);
+            });
 
-            selectEl.innerHTML = '<option value="">-- Pilih Nama --</option>';
-
-            if (selectedClass === "Manual Input" || !selectedClass) {
-                selectEl.classList.add('hidden');
-                inputEl.classList.remove('hidden');
-            } else {
-                selectEl.classList.remove('hidden');
-                inputEl.classList.add('hidden');
-
-                const students = classStudents[selectedClass] || [];
-                students.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s;
-                    selectEl.appendChild(opt);
-                });
+            if (sekolahTerpilihSebelumnya) {
+                selectSekolah.value = sekolahTerpilihSebelumnya;
             }
         }
 
-        // Get Final Selected Student Name
-        function getStudentName() {
-            const selectedClass = document.getElementById('student-class').value;
-            if (selectedClass === "Manual Input" || !selectedClass) {
-                return document.getElementById('student-name-input').value.trim();
-            }
-            return document.getElementById('student-name-select').value;
+        function filterKelas() {
+            const sekolahDipilih = document.getElementById('inputSekolah').value;
+            const selectKelas = document.getElementById('inputKelas');
+            const selectNama = document.getElementById('inputNamaLengkap');
+            
+            selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            selectNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            
+            if (!sekolahDipilih) return;
+
+            const kelasUnik = [...new Set(masterDataSiswa.filter(item => item.sekolah === sekolahDipilih).map(item => item.kelas))];
+            kelasUnik.forEach(kelas => {
+                const opt = document.createElement('option');
+                opt.value = kelas;
+                opt.textContent = kelas;
+                selectKelas.appendChild(opt);
+            });
+        }
+
+        function filterNama() {
+            const sekolahDipilih = document.getElementById('inputSekolah').value;
+            const kelasDipilih = document.getElementById('inputKelas').value;
+            const selectNama = document.getElementById('inputNamaLengkap');
+            
+            selectNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            
+            if (!kelasDipilih) return;
+
+            const listNama = masterDataSiswa.filter(item => item.sekolah === sekolahDipilih && item.kelas === kelasDipilih);
+            listNama.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.nama;
+                opt.textContent = item.nama;
+                selectNama.appendChild(opt);
+            });
         }
 
         // Timer Mechanics
         function startLKPD() {
-            const school = document.getElementById('student-school').value;
-            const cls = document.getElementById('student-class').value;
-            const name = getStudentName();
+            const school = document.getElementById('inputSekolah').value;
+            const cls = document.getElementById('inputKelas').value;
+            const name = document.getElementById('inputNamaLengkap').value;
 
-            if (!cls || !name) {
-                alert("⚠️ Harap pilih Kelas dan Nama Lengkap siswa terlebih dahulu!");
+            if (!school || !cls || !name) {
+                alert("⚠️ Harap pilih Sekolah, Kelas, dan Nama Lengkap siswa terlebih dahulu pada formulir!");
                 return;
             }
 
@@ -1018,7 +1170,7 @@
                 btn.className = "px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-2";
                 btn.innerHTML = `<span>⏳ Waktu Berjalan...</span>`;
 
-                alert(` Serta Pengerjaan Dicurahkan!\n\nNama: ${name}\nKelas: ${cls}\nWaktu Mulai: ${lkpdStartTimeStr}`);
+                alert(`Pengerjaan LKPD Dimulai!\n\nNama: ${name}\nKelas: ${cls}\nWaktu Mulai: ${lkpdStartTimeStr}`);
             }
         }
 
@@ -1107,7 +1259,13 @@
             caseData.forEach((c, idx) => {
                 const btn = document.createElement('button');
                 btn.onclick = () => loadCase(idx);
-                btn.className = `w-full text-left p-3 rounded-xl border transition-all text-xs flex items-center justify-between ${idx === currentCaseIndex ? 'bg-indigo-50 border-indigo-500 font-bold text-indigo-900' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`;
+                
+                let extraClass = '';
+                if(answeredCases.has(idx)) extraClass = 'bg-slate-100 opacity-60 border-slate-300 line-through';
+                else if(idx === currentCaseIndex) extraClass = 'bg-indigo-50 border-indigo-500 font-bold text-indigo-900';
+                else extraClass = 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50';
+
+                btn.className = `w-full text-left p-3 rounded-xl border transition-all text-xs flex items-center justify-between ${extraClass}`;
                 btn.innerHTML = `<span class="truncate">Kasus #${c.id}: ${c.title}</span><span class="text-[10px] text-slate-400">100 Pts</span>`;
                 container.appendChild(btn);
             });
@@ -1119,338 +1277,366 @@
             const c = caseData[idx];
             const content = document.getElementById('case-content');
             
+            let optionsHtml = '';
+            c.options.forEach(opt => {
+                optionsHtml += `
+                    <button onclick="checkDetectiveAnswer(${idx}, '${opt.id}', ${opt.correct})" class="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition-all text-xs text-slate-700 font-medium flex gap-3">
+                        <span class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold text-slate-500 shrink-0">${opt.id}</span>
+                        <span>${opt.text}</span>
+                    </button>
+                `;
+            });
+
             content.innerHTML = `
                 <div class="space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">SKENARIO KASUS AKTIF #${c.id}</span>
-                        <span class="text-xs text-slate-400 font-medium">Modul Simulasi Analisis</span>
+                        <h3 class="text-lg font-bold text-slate-900">Kasus #${c.id}: ${c.title}</h3>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold shadow-sm">100 Poin</span>
                     </div>
-
-                    <h3 class="text-base font-bold text-slate-900">${c.title}</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200/60">${c.description}</p>
-
-                    <div class="space-y-2 pt-2">
-                        <p class="text-xs font-bold text-slate-800">Pilih Aksi Tindakan Anda:</p>
-                        ${c.options.map(opt => `
-                            <button onclick="checkAnswer('${opt.id}')" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition-all text-xs font-medium text-slate-700 flex items-start gap-2">
-                                <span class="font-bold text-indigo-600">[${opt.id}]</span>
-                                <span>${opt.text}</span>
-                            </button>
-                        `).join('')}
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-900 leading-relaxed shadow-sm">
+                        ${c.description}
                     </div>
-
-                    <div id="case-feedback" class="hidden mt-4 p-4 rounded-xl border text-xs space-y-2"></div>
+                    <div class="space-y-3 pt-2">
+                        <p class="text-xs font-bold text-slate-700">Pilih tindakan yang paling tepat berdasarkan skenario:</p>
+                        ${optionsHtml}
+                    </div>
+                    <div id="case-result-${idx}" class="hidden mt-4 p-4 rounded-xl text-xs space-y-2 transition-all"></div>
                 </div>
             `;
-        }
-
-        function checkAnswer(optionId) {
-            const c = caseData[currentCaseIndex];
-            const selectedOpt = c.options.find(o => o.id === optionId);
-            const feedbackEl = document.getElementById('case-feedback');
-
-            if (selectedOpt.correct) {
-                detectiveScore += 100;
-                document.getElementById('detective-score').innerText = `${detectiveScore} / 500`;
-                feedbackEl.className = "mt-4 p-4 rounded-xl border bg-emerald-50 border-emerald-300 text-emerald-900 text-xs space-y-2";
-                feedbackEl.innerHTML = `<p class="font-bold text-emerald-700">✅ Jawaban Anda Tepat (+100 Poin)!</p><p>${c.explanation}</p><p class="text-[11px] font-semibold text-emerald-800 pt-1 border-t border-emerald-200">Rujukan Kebijakan: ${c.clause}</p>`;
-            } else {
-                feedbackEl.className = "mt-4 p-4 rounded-xl border bg-rose-50 border-rose-300 text-rose-900 text-xs space-y-2";
-                feedbackEl.innerHTML = `<p class="font-bold text-rose-700">❌ Tindakan Kurang Tepat!</p><p>${c.explanation}</p><p class="text-[11px] font-semibold text-rose-800 pt-1 border-t border-rose-200">Rujukan Kebijakan: ${c.clause}</p>`;
+            
+            // Show result immediately if already answered
+            if(answeredCases.has(idx)) {
+                checkDetectiveAnswer(idx, null, true, true);
             }
-            feedbackEl.classList.remove('hidden');
         }
 
-        // Incident Wizard
-        function moveWizard(direction) {
-            const newStep = currentWizardStep + direction;
-            if (newStep < 1 || newStep > 4) return;
+        function checkDetectiveAnswer(caseIdx, optId, isCorrect, isRevisit = false) {
+            const c = caseData[caseIdx];
+            const resultDiv = document.getElementById(`case-result-${caseIdx}`);
+            resultDiv.classList.remove('hidden');
+            
+            if (isCorrect || isRevisit) {
+                if(!isRevisit && !answeredCases.has(caseIdx)) {
+                    detectiveScore += 100;
+                    document.getElementById('detective-score').innerText = `${detectiveScore} / 500`;
+                    answeredCases.add(caseIdx);
+                    renderCaseButtons(); // update side menu line-through
+                }
+                
+                resultDiv.className = "mt-4 p-4 rounded-xl text-xs space-y-2 bg-teal-50 border border-teal-200 text-teal-900 block";
+                resultDiv.innerHTML = `
+                    <p class="font-bold text-sm text-teal-700">✅ Jawaban Tepat!</p>
+                    <p>${c.explanation}</p>
+                    <div class="mt-2 inline-block bg-white px-2 py-1.5 rounded-lg border border-teal-100 text-[10px] font-bold text-teal-600 shadow-sm">
+                        📌 Pasal Terkait: ${c.clause}
+                    </div>
+                `;
+            } else {
+                if(answeredCases.has(caseIdx)) return; // Prevents negative marking or spam clicking
+                resultDiv.className = "mt-4 p-4 rounded-xl text-xs space-y-2 bg-rose-50 border border-rose-200 text-rose-900 block";
+                resultDiv.innerHTML = `
+                    <p class="font-bold text-sm text-rose-700">❌ Jawaban Kurang Tepat.</p>
+                    <p>Tindakan tersebut berisiko memperburuk keadaan jaringan atau melanggar SOP baku. Silakan evaluasi kembali dan coba pilih opsi lain.</p>
+                `;
+            }
+        }
 
-            document.getElementById(`wizard-step-${currentWizardStep}`).classList.add('hidden');
-            currentWizardStep = newStep;
-            document.getElementById(`wizard-step-${currentWizardStep}`).classList.remove('hidden');
+        // Incident Wizard Controller
+        function moveWizard(stepChange) {
+            currentWizardStep += stepChange;
+            
+            if (currentWizardStep < 1) currentWizardStep = 1;
+            if (currentWizardStep > 4) currentWizardStep = 4;
 
-            const bar = document.getElementById('step-bar-progress');
-            bar.style.width = `${((currentWizardStep - 1) / 3) * 100}%`;
-
+            // Render Steps
             for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`wizard-step-${i}`);
                 const node = document.getElementById(`step-node-${i}`);
-                if (i <= currentWizardStep) {
-                    node.className = "w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center z-10 shadow-md";
+                
+                if (i === currentWizardStep) {
+                    el.classList.remove('hidden');
                 } else {
-                    node.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center z-10";
+                    el.classList.add('hidden');
+                }
+
+                if (i <= currentWizardStep) {
+                    node.className = "w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center z-10 shadow-md transition-all";
+                } else {
+                    node.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center z-10 transition-all";
                 }
             }
 
-            document.getElementById('btn-wizard-prev').disabled = currentWizardStep === 1;
-            document.getElementById('btn-wizard-next').innerText = currentWizardStep === 4 ? "Selesai & Reset" : "Lanjut →";
+            // Update Progress Bar
+            const progress = document.getElementById('step-bar-progress');
+            progress.style.width = `${((currentWizardStep - 1) / 3) * 100}%`;
 
+            // Update Buttons
+            const btnPrev = document.getElementById('btn-wizard-prev');
+            const btnNext = document.getElementById('btn-wizard-next');
+            
+            btnPrev.disabled = currentWizardStep === 1;
+            
             if (currentWizardStep === 4) {
-                const type = document.querySelector('input[name="incident_type"]:checked').value;
-                const reporter = document.getElementById('reporter-name').value;
-                const device = document.getElementById('device-id').value;
-                const desc = document.getElementById('incident-desc').value || "Tidak ada deskripsi rinci.";
-                const mitigation = document.querySelector('input[name="mitigation"]:checked').value;
-
-                document.getElementById('out-reporter').innerText = reporter;
-                document.getElementById('out-type').innerText = type;
-                document.getElementById('out-device').innerText = device;
-                document.getElementById('out-mitigation').innerText = mitigation;
-                document.getElementById('out-desc').innerText = desc;
+                generateTicket();
+                btnNext.innerText = "Selesai ✓";
+                btnNext.onclick = () => alert("Simulasi Pelaporan Insiden Selesai! Tiket diterbitkan.");
+            } else {
+                btnNext.innerText = "Lanjut →";
+                btnNext.onclick = () => moveWizard(1);
             }
+        }
 
-            if (newStep === 1 && direction === 1 && currentWizardStep === 4) {
-                currentWizardStep = 1;
-                moveWizard(0);
-            }
+        function generateTicket() {
+            const type = document.querySelector('input[name="incident_type"]:checked').value;
+            const reporter = document.getElementById('reporter-name').value || 'Siswa Praktikum';
+            const device = document.getElementById('device-id').value || 'Tidak diketahui';
+            const mitigation = document.querySelector('input[name="mitigation"]:checked').value;
+            const desc = document.getElementById('incident-desc').value || 'Tidak ada deskripsi.';
+
+            document.getElementById('out-reporter').innerText = reporter;
+            document.getElementById('out-type').innerText = type;
+            document.getElementById('out-device').innerText = device;
+            document.getElementById('out-mitigation').innerText = mitigation;
+            document.getElementById('out-desc').innerText = desc;
         }
 
         // Policy Generator Engine
         function generatePolicy() {
-            const school = document.getElementById('gen-school').value;
-            const lab = document.getElementById('gen-lab').value;
-            const bandwidth = document.getElementById('gen-bandwidth').value;
-            const software = document.getElementById('gen-software').value;
-            const sanction = document.getElementById('gen-sanction').value;
+            const school = document.getElementById('gen-school').value || '[Nama Sekolah]';
+            const lab = document.getElementById('gen-lab').value || '[Nama Laboratorium]';
+            const bw = document.getElementById('gen-bandwidth').value;
+            const sw = document.getElementById('gen-software').value;
+            const sanc = document.getElementById('gen-sanction').value;
+            const date = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            const output = document.getElementById('policy-document-output');
-            output.innerHTML = `
-                <div class="text-center border-b border-slate-300 pb-3 mb-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900">DOKUMEN RESMI KEBIJAKAN PENGGUNAAN JARINGAN</h2>
-                    <p class="text-[11px] text-slate-600 font-sans">${school} — ${lab}</p>
+            const policyHtml = `
+                <div class="text-center mb-6">
+                    <h2 class="text-base font-bold uppercase text-slate-900 leading-tight">DOKUMEN KEBIJAKAN PENGGUNAAN JARINGAN (KPJ)</h2>
+                    <p class="text-sm font-bold text-slate-700">${school}</p>
+                    <p class="text-xs text-slate-500">Berlaku untuk: ${lab}</p>
                 </div>
-                <p class="font-bold font-sans text-slate-900 border-b border-slate-200 pb-1">PASAL 1: KETENTUAN UMUM DAN TUJUAN</p>
-                <p>Dokumen Kebijakan Penggunaan Jaringan ini dibuat untuk memastikan seluruh sumber daya jaringan komputer di ${lab} berjalan secara aman, efisien, teratur, dan terlindungi dari ancaman siber.</p>
-                <p class="font-bold font-sans text-slate-900 border-b border-slate-200 pb-1 pt-2">PASAL 2: HAK AKSES DAN PRINSIP LEAST PRIVILEGE</p>
-                <p>Setiap pengguna wajib memiliki akun terotentikasi resmi. Akses diberikan berdasarkan prinsip *Least Privilege*, di mana pengguna hanya diberikan izin minimum untuk menyelesaikan tugas praktikum pembelajaran.</p>
-                <p class="font-bold font-sans text-slate-900 border-b border-slate-200 pb-1 pt-2">PASAL 3: BATASAN BANDWIDTH DAN PERANGKAT LUNAK</p>
-                <ul class="list-disc pl-4 space-y-1">
-                    <li><strong>Konsumsi Bandwidth:</strong> Penggunaan koneksi dibatasi pada ${bandwidth}. Akses unduhan data non-akademik berkapasitas masif dilarang keras.</li>
-                    <li><strong>Aturan Software:</strong> ${software}</li>
+                
+                <h4 class="font-bold text-sm text-slate-800 border-b border-slate-300 pb-1 mb-2">1. Pendahuluan</h4>
+                <p class="mb-4 text-justify">Kebijakan Penggunaan Jaringan (KPJ) ini bertujuan untuk memastikan keamanan, keandalan, dan efisiensi penggunaan sumber daya teknologi informasi di lingkungan ${lab} ${school}. Setiap pengguna jaringan wajib mematuhi seluruh ketentuan yang tercantum dalam dokumen standar operasional ini.</p>
+
+                <h4 class="font-bold text-sm text-slate-800 border-b border-slate-300 pb-1 mb-2">2. Manajemen Akses & Autentikasi</h4>
+                <ul class="list-disc pl-5 mb-4 space-y-1 text-justify">
+                    <li>Setiap pengguna akan diberikan kredensial akun unik (Username & Password) sesuai prinsip Identifikasi Unik.</li>
+                    <li>Dilarang keras membagikan kredensial akun kepada pihak lain (Password Sharing). Semua aktivitas tercatat atas nama pemilik akun.</li>
+                    <li>Pengguna harus melakukan log off atau sign out dengan benar setelah selesai menggunakan fasilitas laboratorium.</li>
                 </ul>
-                <p class="font-bold font-sans text-slate-900 border-b border-slate-200 pb-1 pt-2">PASAL 4: PROSEDUR PELAPORAN INSIDEN DAN SANKSI</p>
-                <p>Setiap indikasi infeksi virus, serangan phishing, atau kebocoran kredensial wajib dilaporkan secara resmi melalui Tim Tanggap Insiden IT sekolah. Pelanggaran terhadap kebijakan ini akan dikenakan sanksi berupa: <em>${sanction}</em>.</p>
-                <div class="pt-4 border-t border-slate-300 text-[10px] font-sans text-slate-500 flex justify-between items-center">
-                    <span>Status Dokumen: Draf Formal LKPD</span>
-                    <span>Ditetapkan: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+
+                <h4 class="font-bold text-sm text-slate-800 border-b border-slate-300 pb-1 mb-2">3. Penggunaan Sumber Daya (Resource Policy)</h4>
+                <ul class="list-disc pl-5 mb-4 space-y-1 text-justify">
+                    <li><strong>Alokasi Bandwidth:</strong> Penggunaan internet dibatasi sesuai profil pengguna guna menghindari kelebihan muatan lalu lintas data. Ketentuan saat ini: ${bw}.</li>
+                    <li><strong>Aturan Perangkat Lunak:</strong> ${sw}</li>
+                    <li>Dilarang menggunakan perangkat jaringan untuk aktivitas non-edukasional seperti penambangan kripto (crypto mining), perjudian daring, atau pengunduhan file bajakan.</li>
+                </ul>
+
+                <h4 class="font-bold text-sm text-slate-800 border-b border-slate-300 pb-1 mb-2">4. Tanggap Insiden Keamanan (Incident Response)</h4>
+                <ul class="list-disc pl-5 mb-4 space-y-1 text-justify">
+                    <li>Setiap temuan anomali seperti infeksi virus, indikasi phishing, atau upaya akses fisik mencurigakan wajib segera dilaporkan ke Administrator TI melalui sistem tiket.</li>
+                    <li>Dalam kondisi darurat peretasan/infeksi massal, pengguna diinstruksikan untuk memutuskan koneksi fisik perangkat (mencabut kabel UTP LAN) sebelum melapor guna mengisolasi ancaman.</li>
+                </ul>
+
+                <h4 class="font-bold text-sm text-slate-800 border-b border-slate-300 pb-1 mb-2">5. Konsekuensi Pelanggaran & Sanksi</h4>
+                <p class="mb-4 text-justify">Setiap pelanggaran terhadap kebijakan ini akan ditindaklanjuti secara terukur dan proporsional. Bentuk sanksi utama yang diberlakukan bagi pelanggar adalah: <strong>${sanc}</strong></p>
+
+                <div class="mt-8 pt-4 border-t border-slate-300 flex justify-between text-xs">
+                    <div>
+                        <p>Ditetapkan di: Lingkungan Sekolah</p>
+                        <p>Tanggal Pengesahan: ${date}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="mb-12">Administrator TI / Kepala Lab</p>
+                        <p class="font-bold">_________________________</p>
+                        <p class="text-[10px] text-slate-400 mt-1">(Tanda Tangan & Nama Terang)</p>
+                    </div>
                 </div>
             `;
+            document.getElementById('policy-document-output').innerHTML = policyHtml;
         }
 
         function printPolicy() {
+            const printContent = document.getElementById('policy-document-output').innerHTML;
+            const originalContent = document.body.innerHTML;
+            // Temporarily replace body content for printing
+            document.body.innerHTML = `<div class="p-8 font-serif bg-white text-black max-w-4xl mx-auto">${printContent}</div>`;
             window.print();
+            // Restore body content and reload to reconnect event listeners
+            document.body.innerHTML = originalContent;
+            location.reload(); 
         }
 
-        // Quiz Engine
+        // Evaluation Module Engine
         function renderQuiz() {
             const container = document.getElementById('quiz-questions-list');
             container.innerHTML = '';
-
+            
             pgData.forEach((q) => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4";
-                card.innerHTML = `
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
-                        <h3 class="text-sm font-bold text-slate-900">${q.question}</h3>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">Pilih 2 Jawaban</span>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">${q.context}</p>
+                let optionsHtml = '';
+                q.options.forEach(opt => {
+                    optionsHtml += `
+                        <label class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs text-slate-700 font-medium">
+                            <input type="checkbox" name="pg_q${q.id}" value="${opt.id}" class="mt-0.5 accent-indigo-600 w-4 h-4 rounded">
+                            <span>${opt.text}</span>
+                        </label>
+                    `;
+                });
 
-                    <div class="space-y-2 pt-1">
-                        ${q.options.map(opt => `
-                            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-                                <input type="checkbox" name="q_${q.id}" value="${opt.id}" class="mt-0.5 accent-indigo-600 w-4 h-4 rounded">
-                                <span class="text-xs font-medium text-slate-700">${opt.text}</span>
-                            </label>
-                        `).join('')}
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm transition-colors" id="pg-card-${q.id}">
+                        <div class="mb-3 border-b border-slate-100 pb-2">
+                            <h4 class="font-bold text-sm text-slate-900">${q.question}</h4>
+                            <p class="text-xs text-slate-500 mt-1 leading-relaxed">${q.context}</p>
+                        </div>
+                        <div class="space-y-2">
+                            ${optionsHtml}
+                        </div>
+                        <div id="pg-feedback-${q.id}" class="hidden mt-4 p-3 rounded-lg text-xs font-medium leading-relaxed"></div>
                     </div>
-
-                    <div id="quiz-feedback-${q.id}" class="hidden mt-3 p-4 rounded-xl border text-xs space-y-1"></div>
                 `;
-                container.appendChild(card);
             });
-        }
-
-        function calculateQuizScore() {
-            let totalScore = 0;
-            pgData.forEach(q => {
-                const checkboxes = document.querySelectorAll(`input[name="q_${q.id}"]:checked`);
-                const userSelected = Array.from(checkboxes).map(cb => cb.value);
-                const isCorrect = userSelected.length === 2 && userSelected.every(val => q.correctAnswers.includes(val));
-                if (isCorrect) totalScore += 10;
-            });
-            return totalScore;
         }
 
         function submitQuiz() {
-            let totalScore = 0;
+            let score = 0;
             pgData.forEach(q => {
-                const checkboxes = document.querySelectorAll(`input[name="q_${q.id}"]:checked`);
-                const userSelected = Array.from(checkboxes).map(cb => cb.value);
-                const feedbackEl = document.getElementById(`quiz-feedback-${q.id}`);
-
-                const isCorrect = userSelected.length === 2 && userSelected.every(val => q.correctAnswers.includes(val));
+                const checkboxes = document.querySelectorAll(`input[name="pg_q${q.id}"]:checked`);
+                const selected = Array.from(checkboxes).map(cb => cb.value);
+                const feedbackDiv = document.getElementById(`pg-feedback-${q.id}`);
+                const card = document.getElementById(`pg-card-${q.id}`);
+                
+                feedbackDiv.classList.remove('hidden');
+                
+                // Logic: Must select EXACTLY the correct answers (Complex Multiple Choice)
+                const isCorrect = selected.length === q.correctAnswers.length && q.correctAnswers.every(val => selected.includes(val));
 
                 if (isCorrect) {
-                    totalScore += 10;
-                    feedbackEl.className = "mt-3 p-4 rounded-xl border bg-emerald-50 border-emerald-300 text-emerald-900 text-xs space-y-1";
-                    feedbackEl.innerHTML = `<p class="font-bold text-emerald-800">✅ Benar Sempurna (+10 Poin)!</p><p>${q.explanation}</p>`;
+                    score += 10; // 10 soal x 10 = 100 max
+                    feedbackDiv.className = "mt-4 p-3 rounded-lg text-xs font-medium bg-teal-50 text-teal-800 border border-teal-200 block";
+                    feedbackDiv.innerHTML = `✅ <strong>Analisis Tepat!</strong> ${q.explanation}`;
+                    card.classList.add('border-teal-300', 'bg-teal-50/10');
                 } else {
-                    feedbackEl.className = "mt-3 p-4 rounded-xl border bg-rose-50 border-rose-300 text-rose-900 text-xs space-y-1";
-                    feedbackEl.innerHTML = `<p class="font-bold text-rose-800">❌ Belum Tepat! (Jawaban Benar: ${q.correctAnswers.join(' & ')})</p><p>${q.explanation}</p>`;
+                    feedbackDiv.className = "mt-4 p-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200 block";
+                    feedbackDiv.innerHTML = `❌ <strong>Kurang Tepat.</strong> Kunci Jawaban yang benar adalah <strong>${q.correctAnswers.join(' & ')}</strong>. ${q.explanation}`;
+                    card.classList.add('border-rose-300', 'bg-rose-50/10');
                 }
-                feedbackEl.classList.remove('hidden');
+                
+                // Lock the inputs after submission
+                document.querySelectorAll(`input[name="pg_q${q.id}"]`).forEach(cb => cb.disabled = true);
             });
 
-            document.getElementById('quiz-total-score').innerText = `${totalScore} / 100`;
+            document.getElementById('quiz-total-score').innerText = `${score} / 100`;
+            alert(`Pemeriksaan Selesai!\nSkor Pilihan Ganda Anda: ${score} dari 100.`);
         }
 
-        // Essay Engine
         function renderEssay() {
             const container = document.getElementById('essay-questions-list');
             container.innerHTML = '';
-
-            essayData.forEach(e => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4";
-                card.innerHTML = `
-                    <div class="border-b border-slate-100 pb-2">
-                        <h3 class="text-sm font-bold text-slate-900">${e.title}</h3>
-                    </div>
-                    <p class="text-xs text-slate-700 leading-relaxed font-medium">${e.question}</p>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lembar Jawaban Siswa:</label>
-                        <textarea id="essay_ans_${e.id}" rows="4" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Ketikkan argumen analisis Anda di sini..."></textarea>
-                    </div>
-
-                    <button onclick="toggleRubric(${e.id})" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all">
-                        🔍 Buka Indikator & Kunci Analisis
-                    </button>
-
-                    <div id="rubric-${e.id}" class="hidden p-4 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 text-xs space-y-1">
-                        <p class="font-bold text-indigo-900">💡 Panduan Indikator Jawaban Ideal:</p>
-                        <p class="leading-relaxed">${e.rubric}</p>
+            
+            essayData.forEach((e) => {
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <h4 class="font-bold text-sm text-slate-900 mb-2 border-b border-slate-100 pb-2">${e.title}</h4>
+                        <p class="text-xs text-slate-700 leading-relaxed mb-3">${e.question}</p>
+                        <textarea id="essay-ans-${e.id}" rows="4" class="w-full p-3 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-3 bg-slate-50 focus:bg-white transition-colors" placeholder="Ketikkan argumen dan analisis Anda di sini..."></textarea>
+                        
+                        <button onclick="toggleEssayKey(${e.id})" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                            <span>🔍 Buka Indikator & Kunci Analisis</span>
+                        </button>
+                        
+                        <div id="essay-key-${e.id}" class="hidden mt-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed shadow-sm">
+                            <span class="font-bold block mb-1">💡 Rubrik Penilaian:</span>
+                            ${e.rubric}
+                        </div>
                     </div>
                 `;
-                container.appendChild(card);
             });
         }
 
-        function toggleRubric(id) {
-            document.getElementById(`rubric-${id}`).classList.toggle('hidden');
+        function toggleEssayKey(id) {
+            const el = document.getElementById(`essay-key-${id}`);
+            el.classList.toggle('hidden');
         }
 
-        // Reset All Form Fields
+        // Form Actions & Apps Script Submission
         function resetWholeForm() {
-            if (confirm("Apakah Anda yakin ingin mengosongkan seluruh isi jawaban dan identitas LKPD?")) {
-                document.getElementById('student-class').value = "";
-                updateStudentNameDropdown();
-                document.getElementById('student-name-input').value = "";
-                
-                // Clear Quiz Checkboxes
-                pgData.forEach(q => {
-                    const checkboxes = document.querySelectorAll(`input[name="q_${q.id}"]`);
-                    checkboxes.forEach(cb => cb.checked = false);
-                    const fb = document.getElementById(`quiz-feedback-${q.id}`);
-                    if (fb) fb.classList.add('hidden');
-                });
-                document.getElementById('quiz-total-score').innerText = "0 / 100";
-
-                // Clear Essay Textareas
-                essayData.forEach(e => {
-                    const ta = document.getElementById(`essay_ans_${e.id}`);
-                    if (ta) ta.value = "";
-                });
-
-                // Reset Timer
-                clearInterval(timerInterval);
-                secondsElapsed = 0;
-                isTimerRunning = false;
-                document.getElementById('timer-display').innerText = "00:00:00";
-                document.getElementById('timer-badge').classList.add('hidden');
-                
-                const btn = document.getElementById('btn-start-lkpd');
-                btn.className = "px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-2";
-                btn.innerHTML = `<span>✓ Mulai LKPD & Catat Waktu</span>`;
-
-                alert("Formulir LKPD berhasil di-reset.");
+            if(confirm("Apakah Anda yakin ingin mereset seluruh sesi simulasi LKPD ini?\nSemua jawaban dan waktu yang belum dikirim akan terhapus.")) {
+                location.reload();
             }
         }
 
-        // GOOGLE APPS SCRIPT SUBMISSION API
         async function submitToAppScript() {
-            const school = document.getElementById('student-school').value;
-            const cls = document.getElementById('student-class').value;
-            const name = getStudentName();
-
-            if (!cls || !name) {
-                alert("⚠️ Harap isi Identitas Peserta Didik (Kelas dan Nama) sebelum mengirim!");
+            if (!isTimerRunning) {
+                alert("⛔ Anda belum menekan tombol 'Mulai LKPD' di bagian Identitas.\nData tidak dapat dikirim karena waktu pengerjaan belum tercatat.");
                 return;
             }
 
             if (!appsScriptUrl) {
-                const userUrl = prompt("Masukkan Google Apps Script Web App URL Anda:\n(Contoh: https://script.google.com/macros/s/.../exec)");
-                if (!userUrl) {
-                    alert("Pengiriman dibatalkan. URL Apps Script diperlukan!");
-                    return;
-                }
-                appsScriptUrl = userUrl.trim();
-                localStorage.setItem('lkpd_apps_script_url', appsScriptUrl);
+                alert("⚠️ URL Google Apps Script belum dikonfigurasi!\nSilakan isi terlebih dahulu di bagian konfigurasi (⚙️ App Script URL) pada form Identitas atas.");
+                return;
             }
 
-            const pgScore = calculateQuizScore();
+            const school = document.getElementById('inputSekolah').value;
+            const cls = document.getElementById('inputKelas').value;
+            const name = document.getElementById('inputNamaLengkap').value;
+
+            if (!school || !cls || !name) {
+                alert("⛔ Formulir Identitas (Sekolah, Kelas, Nama Lengkap) masih kosong!\nHarap lengkapi sebelum melakukan pengiriman.");
+                return;
+            }
+
+            // Gather All Assessment Data
+            const pgScoreText = document.getElementById('quiz-total-score').innerText.split(' ')[0];
+            const pgScore = parseInt(pgScoreText) || 0;
             const timeDuration = document.getElementById('timer-display').innerText;
+            const lkpdModule = document.querySelector('input[name="lkpd_module"]:checked').value;
+            
+            // Kalkulasi nilai akhir (contoh: Skor PG ditambah Skor Detektif yang disesuaikan skala 100)
+            const finalScore = pgScore + (detectiveScore / 5);
 
-            // Collect Essay Responses
-            const essayAnswers = {};
-            essayData.forEach(e => {
-                const val = document.getElementById(`essay_ans_${e.id}`)?.value || "";
-                essayAnswers[`Essay_${e.id}`] = val;
-            });
-
-            // Payload Object
+            // Sesuaikan payload dengan struktur variabel di Apps Script
             const payload = {
-                timestamp: new Date().toLocaleString('id-ID'),
                 sekolah: school,
                 kelas: cls,
-                nama: name,
-                lkpd: "LKPD 1 : Kebijakan Penggunaan Jaringan & Keamanan Jaringan",
-                waktuMulai: lkpdStartTimeStr || "Langsung Kirim",
-                durasiPengerjaan: timeDuration,
-                skorDetektif: detectiveScore,
-                skorPG: pgScore,
-                jawabanEssay: JSON.stringify(essayAnswers)
+                nama_lengkap: name,
+                pilihan_lkpd: lkpdModule,
+                durasi_detik: secondsElapsed, // Menggunakan variabel detik langsung dari timer
+                skor_pg_benar: pgScore,
+                nilai_akhir: finalScore
             };
 
             const btnSubmit = document.getElementById('btn-submit-appscript');
-            btnSubmit.disabled = true;
+            const originalText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = `<span>⏳ Mengirim Data...</span>`;
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
 
             try {
-                // Use URLSearchParams or JSON body
-                const formData = new URLSearchParams();
-                for (const key in payload) {
-                    formData.append(key, payload[key]);
-                }
-
+                // Fetch POST Request ke Apps Script Web App menggunakan JSON string
                 await fetch(appsScriptUrl, {
                     method: 'POST',
                     mode: 'no-cors', // standard mode for Google Apps Script Web App redirects
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData.toString()
+                    headers: { 'Content-Type': 'text/plain' }, // WAJIB text/plain agar lolos dari blokir CORS preflight browser
+                    body: JSON.stringify(payload)
                 });
 
-                alert(`🎉 LKPD BERHASIL TERKIRIM!\n\nNama: ${name}\nKelas: ${cls}\nNilai PG: ${pgScore}/100\nSkor Detektif: ${detectiveScore}/500\nDurasi: ${timeDuration}\n\nData pengerjaan telah tercatat di Google Sheets pengajar.`);
-
+                alert(`🎉 LKPD BERHASIL TERKIRIM!\n\nNama: ${name}\nKelas: ${cls}\nNilai PG: ${pgScore}\nNilai Akhir: ${finalScore}\nDurasi: ${timeDuration}\n\nData pengerjaan telah tercatat di Google Sheets pengajar.`);
+                
+                // Hentikan timer dan ubah warna badge
                 if (timerInterval) clearInterval(timerInterval);
+                document.getElementById('timer-badge').classList.replace('bg-indigo-50', 'bg-emerald-50');
+                document.getElementById('timer-badge').classList.replace('text-indigo-700', 'text-emerald-700');
+                document.getElementById('timer-badge').classList.replace('border-indigo-200', 'border-emerald-200');
 
             } catch (err) {
                 console.error("Submission Error:", err);
-                alert("❌ Terjadi kesalahan saat mengirim data. Pastikan Web App URL Apps Script sudah benar.");
+                alert("❌ Terjadi kesalahan saat mengirim data. Pastikan Web App URL Apps Script sudah benar dan internet stabil.");
             } finally {
+                btnSubmit.innerHTML = originalText;
                 btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<span>☁️ Selesaikan & Kirim LKPD</span>`;
+                btnSubmit.classList.remove('opacity-75', 'cursor-not-allowed');
             }
         }
     </script>
