@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LKPD 2 : Ancaman dan Serangan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Main Header Card -->
+    <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-2">
+                    <i class="fa-solid fa-shield-halved"></i> Modul Pembelajaran Interaktif
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">LKPD 2 : Ancaman dan Serangan</h1>
+                <p class="text-slate-300 text-sm mt-1">Ancaman, Serangan, Simulasi Laboratorium & Evaluasi Komprehensif</p>
+            </div>
+            
+            <!-- Floating Timer -->
+            <div class="bg-slate-800/80 backdrop-blur border border-slate-700/60 rounded-xl p-3 px-4 flex items-center gap-3 shadow-inner">
+                <div class="w-10 h-10 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">
+                    <i class="fa-regular fa-clock animate-pulse"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Waktu Pengerjaan</div>
+                    <div id="timerDisplay" class="text-xl font-mono font-bold text-emerald-400">00:00</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Student Identity Box -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="fa-solid fa-id-card text-indigo-600 text-xl"></i>
+            <h2 class="text-lg font-bold text-slate-800">Identitas Peserta Didik</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="selectSekolah" class="block text-xs font-semibold text-slate-600 mb-1">Sekolah</label>
+                <select id="selectSekolah" onchange="onSekolahChange()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2.5 transition">
+                    <option value="">-- Pilih Sekolah --</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="selectKelas" class="block text-xs font-semibold text-slate-600 mb-1">Kelas</label>
+                <select id="selectKelas" onchange="onKelasChange()" disabled class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2.5 transition disabled:opacity-50 disabled:bg-slate-100">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="selectNama" class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap</label>
+                <select id="selectNama" onchange="onNamaChange()" disabled class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2.5 transition disabled:opacity-50 disabled:bg-slate-100">
+                    <option value="">-- Pilih Nama --</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- SIMULASI 1: DoS -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-red-100 relative overflow-hidden space-y-4">
+        <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800">Simulasi 1: Serangan DoS (Denial of Service)</h3>
+                    <p class="text-xs text-slate-500">Uji bagaimana <i>server</i> merespon permintaan normal vs banjir paket (<i>Ping Flood</i>).</p>
+                </div>
+            </div>
+            <span id="serverStatusBadge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">ONLINE</span>
+        </div>
+
+        <!-- Progress Bar DoS -->
+        <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold text-slate-600">
+                <span>Beban Kerja Server:</span>
+                <span id="bebanText">5%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-6 overflow-hidden p-0.5 shadow-inner">
+                <div id="beban-server" class="bg-emerald-500 h-full rounded-full transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white" style="width: 5%;">
+                    5%
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-2 pt-2">
+            <button type="button" onclick="kirimNormal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-lg transition shadow-sm active:scale-95 flex items-center gap-1.5">
+                <i class="fa-solid fa-paper-plane"></i> Kirim Request Normal
+            </button>
+            <button type="button" onclick="mulaiDoS()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-lg transition shadow-sm active:scale-95 flex items-center gap-1.5">
+                <i class="fa-solid fa-burst"></i> Luncurkan Serangan DoS
+            </button>
+            <button type="button" onclick="resetServer()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium text-xs rounded-lg transition shadow-sm active:scale-95 flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-right"></i> Restart Server
+            </button>
+        </div>
+
+        <!-- Reflection Box 1 -->
+        <div class="pt-2">
+            <label for="jawaban1" class="block text-xs font-bold text-slate-700 mb-1">
+                <i class="fa-solid fa-pen-to-square text-indigo-500 mr-1"></i> Pengamatan 1: Apa yang terjadi pada beban server saat serangan DoS diluncurkan?
+            </label>
+            <textarea id="jawaban1" rows="3" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-3 transition custom-scrollbar" placeholder="Tuliskan hasil pengamatan Anda secara mendetail..."></textarea>
+        </div>
+    </section>
+
+    <!-- SIMULASI 2: SQL INJECTION -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 relative overflow-hidden space-y-4">
+        <div class="absolute top-0 left-0 w-2 h-full bg-amber-500"></div>
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                <i class="fa-solid fa-database"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800">Simulasi 2: Serangan SQL Injection</h3>
+                <p class="text-xs text-slate-500">Skenario: Isikan kode injeksi ini pada kolom Password untuk meretas sistem: <code class="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">' OR 1=1 --</code></p>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 text-slate-100 rounded-xl p-4 max-w-sm space-y-3 shadow-md border border-slate-800">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span class="text-xs font-semibold text-slate-400 flex items-center gap-1"><i class="fa-solid fa-lock text-emerald-400"></i> System Authentication</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Username</label>
+                <input type="text" id="username" value="admin" readonly class="w-full bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded p-2 cursor-not-allowed">
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Password</label>
+                <input type="text" id="password" placeholder="Masukkan password / kode SQL..." class="w-full bg-slate-800 border border-slate-600 text-white text-xs rounded p-2 focus:ring-1 focus:ring-amber-400 focus:border-amber-400">
+            </div>
+            <button type="button" onclick="cobaLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs py-2 rounded transition active:scale-95">
+                Bypass Auth / Login
+            </button>
+            <div id="pesan-login" class="text-xs font-medium text-center min-h-[1.5rem] pt-1"></div>
+        </div>
+
+        <!-- Reflection Box 2 -->
+        <div class="pt-2">
+            <label for="jawaban2" class="block text-xs font-bold text-slate-700 mb-1">
+                <i class="fa-solid fa-pen-to-square text-indigo-500 mr-1"></i> Pengamatan 2: Mengapa sistem dapat ditembus meskipun password asli tidak diketahui?
+            </label>
+            <textarea id="jawaban2" rows="3" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-3 transition custom-scrollbar" placeholder="Tuliskan analisis Anda mengenai logika query SQL..."></textarea>
+        </div>
+    </section>
+
+    <!-- SOAL PILIHAN GANDA (20 Soal) -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-indigo-600 text-xl"></i>
+                <h2 class="text-lg font-bold text-slate-800">Evaluasi Pilihan Ganda (20 Soal)</h2>
+            </div>
+            <span class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-3 py-1 rounded-full border border-indigo-200">Bobot: 100 Poin</span>
+        </div>
+
+        <form id="formPG" class="space-y-4">
+            <!-- Questions rendered via JS loop or structure -->
+            <div id="questionsContainer" class="space-y-4"></div>
+        </form>
+    </section>
+
+    <!-- KESIMPULAN -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="fa-solid fa-lightbulb text-amber-500 text-xl"></i>
+            <h2 class="text-lg font-bold text-slate-800">Kesimpulan LKPD</h2>
+        </div>
+
+        <div>
+            <label for="jawaban3" class="block text-xs font-bold text-slate-700 mb-2">
+                <b>Pertanyaan Kesimpulan:</b> Tuliskan langkah pencegahan dasar yang harus dilakukan agar jaringan/aplikasi terhindar dari serangan DoS dan SQL Injection!
+            </label>
+            <textarea id="jawaban3" rows="4" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-3 transition custom-scrollbar" placeholder="Tuliskan kesimpulan komprehensif Anda..."></textarea>
+        </div>
+    </section>
+
+    <!-- SUBMIT BUTTON -->
+    <div class="pt-2 pb-8">
+        <button id="btn-submit-appscript" onclick="submitLKPD()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-base py-4 rounded-xl shadow-lg hover:shadow-xl transition transform active:scale-98 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Kirim Hasil Pekerjaan LKPD
+        </button>
+    </div>
+</div>
+
+<!-- Custom Notification Modal -->
+<div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300" id="modalBox">
+        <div class="text-center space-y-3">
+            <div id="modalIcon" class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mx-auto font-bold">
+                <i class="fa-solid fa-info"></i>
+            </div>
+            <h3 id="modalTitle" class="text-base font-bold text-slate-800">Notifikasi</h3>
+            <p id="modalMessage" class="text-xs text-slate-600 whitespace-pre-line"></p>
+            <button onclick="closeModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-lg transition mt-2">
+                Mengerti
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let appsScriptUrl = localStorage.getItem('lkpd_apps_script_url') || DEFAULT_SCRIPT_URL;
+
+    // Database Siswa
+    let masterDataSiswa = [];
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    // Questions Data Array
+    const soalPG = [
+        { id: 1, text: "Kondisi atau peristiwa yang memiliki potensi untuk menyebabkan kerugian atau merusak sistem jaringan disebut...", options: ["Serangan (Attack)", "Ancaman (Threat)", "Eksploitasi (Exploit)", "Kerentanan (Vulnerability)", "Insiden (Incident)"] },
+        { id: 2, text: "Tindakan nyata yang dilakukan oleh pihak tidak berwenang untuk mengeksploitasi celah keamanan sistem dinamakan...", options: ["Threat", "Risk", "Attack", "Patch", "Vulnerability"] },
+        { id: 3, text: "Berikut ini yang merupakan contoh dari ancaman internal adalah...", options: ["Kelompok hacker eksternal yang meretas server", "Serangan DDoS dari botnet global", "Karyawan yang menyalahgunakan hak akses data sensitif", "Infeksi malware dari situs web luar", "Spamming email dari server asing"] },
+        { id: 4, text: "Karakteristik utama dari ancaman pasif (Passive Threat) adalah...", options: ["Merusak basis data utama", "Mengubah konfigurasi router", "Mematikan layanan server (down)", "Memata-matai atau mengumpulkan data tanpa mengubah sistem", "Mengunci file pengguna dengan enkripsi"] },
+        { id: 5, text: "Aktivitas berikut yang tergolong ke dalam ancaman aktif adalah...", options: ["Traffic Analysis", "Eavesdropping (menguping data)", "Sniffing paket data di jaringan publik", "Modifikasi isi pesan dalam komunikasi jaringan", "Membaca pesan email yang tidak terenkripsi"] },
+        { id: 6, text: "Jenis malware yang dapat mereplikasi (menggandakan) dirinya sendiri dan menyebar melalui jaringan tanpa butuh interaksi pengguna adalah...", options: ["Virus", "Worm", "Trojan Horse", "Adware", "Spyware"] },
+        { id: 7, text: "Perbedaan utama antara Virus dan Trojan Horse adalah...", options: ["Trojan menyebar lewat jaringan, Virus lewat flashdisk", "Trojan mereplikasi diri, Virus tidak", "Trojan menyamar sebagai program sah/berguna, sedangkan Virus menempel pada file lain", "Virus meminta tebusan uang, Trojan menampilkan iklan", "Virus menyembunyikan proses sistem, Trojan mencuri kata sandi"] },
+        { id: 8, text: "Jenis malware yang mengunci atau mengenkripsi data pengguna lalu meminta tebusan dana dinamakan...", options: ["Spyware", "Rootkit", "Ransomware", "Adware", "Worm"] },
+        { id: 9, text: "Kumpulan perangkat lunak berbahaya yang dirancang khusus untuk menyembunyikan keberadaan proses atau file berbahaya dari sistem operasi disebut...", options: ["Rootkit", "Botnet", "Keylogger", "Adware", "Ransomware"] },
+        { id: 10, text: "Upaya penipuan untuk mencuri data sensitif dengan menyamar sebagai pihak tepercaya melalui pesan singkat SMS dikenal sebagai...", options: ["Phishing", "Spear Phishing", "Smishing", "Vishing", "Whaling"] },
+        { id: 11, text: "Serangan phishing yang secara spesifik ditargetkan kepada jajaran direksi atau eksekutif tingkat tinggi perusahaan disebut...", options: ["Smishing", "Whaling", "Vishing", "Spear Phishing", "Social Engineering"] },
+        { id: 12, text: "Hal utama yang membedakan serangan DoS (Denial of Service) dan DDoS (Distributed Denial of Service) adalah...", options: ["DoS merusak hardware, DDoS merusak software", "DoS menggunakan malware, DDoS menggunakan phishing", "DoS berasal dari satu sumber, sedangkan DDoS berasal dari banyak sumber (botnet)", "DoS mencuri database, DDoS mematikan listrik", "DoS menyerang aplikasi web, DDoS menyerang jaringan kabel"] },
+        { id: 13, text: "Jenis serangan di mana penyerang berada di tengah-tengah jalur komunikasi antara dua pihak untuk mencegat atau mengubah data dinamakan...", options: ["SQL Injection", "Man-in-the-Middle (MitM)", "Cross-Site Scripting (XSS)", "Brute Force", "Zero-day Exploit"] },
+        { id: 14, text: "Serangan yang mengeksploitasi formulir input pada aplikasi web untuk memanipulasi atau mencuri isi database dinamakan...", options: ["Cross-Site Scripting (XSS)", "SQL Injection", "Session Hijacking", "ARP Spoofing", "Brute Force"] },
+        { id: 15, text: "Serangan Cross-Site Scripting (XSS) dilakukan penyerang dengan cara...", options: ["Membanjiri server dengan lalu lintas paket ICMP", "Mencoba kombinasi password secara berulang", "Menyuntikkan skrip jahat (seperti JavaScript) ke halaman web yang diakses pengguna lain", "Menyamar sebagai IP Gateway pada tabel ARP", "Mengirimkan email palsu berisi tautan jebakan"] },
+        { id: 16, text: "Metode peretasan yang mencoba semua kemungkinan kombinasi username dan password secara sistematis sampai ditemukan pasangan yang benar disebut...", options: ["Dictionary Attack / Brute Force", "Zero-day Attack", "Phishing Attack", "Man-in-the-Middle Attack", "DDoS Attack"] },
+        { id: 17, text: "Serangan Zero-day Exploits sangat berbahaya bagi sistem karena...", options: ["Dilakukan oleh ribuan komputer sekaligus", "Memanfaatkan celah keamanan software yang belum diketahui oleh pembuatnya (vendor)", "Menggunakan tebusan uang yang sangat besar", "Merusak fisik komponen perangkat keras komputer", "Menghapus seluruh sistem operasi secara permanen"] },
+        { id: 18, text: "Manakah yang termasuk ke dalam contoh dampak non-finansial akibat serangan siber?", options: ["Biaya pemulihan data (data recovery)", "Denda pelanggaran privasi dari regulator", "Rusaknya reputasi dan hilangnya kepercayaan pelanggan", "Biaya investigasi forensik digital", "Kerugian pendapatan akibat sistem mati"] },
+        { id: 19, text: "Program jahat yang berfungsi mengumpulkan informasi kebiasaan browsing dan kredensial pengguna tanpa izin dinamakan...", options: ["Adware", "Ransomware", "Spyware", "Rootkit", "Worm"] },
+        { id: 20, text: "Langkah utama yang perlu dilakukan untuk meminimalkan risiko serangan berbasis pengguna seperti Phishing adalah...", options: ["Mematikan seluruh koneksi internet", "Meningkatkan kesadaran (awareness) dan pelatihan keamanan bagi pengguna", "Mengganti semua kabel jaringan ke fiber optic", "Menghapus database aplikasi web", "Mengubah kapasitas bandwidth jaringan"] }
+    ];
+
+    // Answer Key
+    const kunciPG = ['B','C','C','D','D','B','C','C','A','C','B','C','B','B','C','A','B','C','C','B'];
+
+    // Render Multiple Choice Questions
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        const letterMap = ['A', 'B', 'C', 'D', 'E'];
+        
+        container.innerHTML = soalPG.map((q, idx) => `
+            <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200/60 space-y-2 hover:border-slate-300 transition">
+                <p class="text-sm font-semibold text-slate-800 flex gap-2">
+                    <span class="text-indigo-600 font-bold">${q.id}.</span>
+                    <span>${q.text}</span>
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 pl-5">
+                    ${q.options.map((opt, oIdx) => `
+                        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-indigo-50/50 hover:border-indigo-200 transition">
+                            <input type="radio" name="q${q.id}" value="${letterMap[oIdx]}" class="w-3.5 h-3.5 text-indigo-600 focus:ring-indigo-500">
+                            <span><b>${letterMap[oIdx]}.</b> ${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Modal Notification Helper
+    function showModal(title, message, iconClass = "fa-info", iconColor = "bg-indigo-100 text-indigo-600") {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMessage').innerText = message;
+        
+        const iconContainer = document.getElementById('modalIcon');
+        iconContainer.className = `w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto font-bold ${iconColor}`;
+        iconContainer.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+        const modal = document.getElementById('customModal');
+        const modalBox = document.getElementById('modalBox');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalBox.classList.remove('scale-95');
+            modalBox.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('customModal');
+        const modalBox = document.getElementById('modalBox');
+        modal.classList.add('opacity-0');
+        modalBox.classList.remove('scale-100');
+        modalBox.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // Data Siswa Dropdown population
+    function initDataSiswa() {
+        const lines = csvDataSiswa.trim().split('\n');
+        masterDataSiswa = lines.slice(1).map(line => {
+            const [sekolah, kelas, nama] = line.split(',');
+            return { sekolah: sekolah.trim(), kelas: kelas.trim(), nama: nama.trim() };
+        });
+
+        const sekolahSelect = document.getElementById('selectSekolah');
+        const sekolahList = [...new Set(masterDataSiswa.map(item => item.sekolah))];
+        
+        sekolahList.forEach(s => {
+            sekolahSelect.innerHTML += `<option value="${s}">${s}</option>`;
+        });
+    }
+
+    function onSekolahChange() {
+        const selectedSekolah = document.getElementById('selectSekolah').value;
+        const kelasSelect = document.getElementById('selectKelas');
+        const namaSelect = document.getElementById('selectNama');
+
+        kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        namaSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+        namaSelect.disabled = true;
+
+        if (!selectedSekolah) {
+            kelasSelect.disabled = true;
+            return;
+        }
+
+        const kelasList = [...new Set(masterDataSiswa.filter(item => item.sekolah === selectedSekolah).map(item => item.kelas))];
+        kelasList.forEach(k => {
+            kelasSelect.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+        kelasSelect.disabled = false;
+    }
+
+    function onKelasChange() {
+        const selectedSekolah = document.getElementById('selectSekolah').value;
+        const selectedKelas = document.getElementById('selectKelas').value;
+        const namaSelect = document.getElementById('selectNama');
+
+        namaSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+        if (!selectedKelas) {
+            namaSelect.disabled = true;
+            return;
+        }
+
+        const namaList = masterDataSiswa.filter(item => item.sekolah === selectedSekolah && item.kelas === selectedKelas);
+        namaList.forEach(item => {
+            namaSelect.innerHTML += `<option value="${item.nama}">${item.nama}</option>`;
+        });
+        namaSelect.disabled = false;
+    }
+
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let isTimerRunning = false;
+
+    function onNamaChange() {
+        if (!isTimerRunning) {
+            startTimer();
+        }
+    }
+
+    function startTimer() {
+        isTimerRunning = true;
+        timerInterval = setInterval(() => {
+            secondsElapsed++;
+            const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+            const secs = String(secondsElapsed % 60).padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+        }, 1000);
+    }
+
+    // DoS Simulation Logic
+    let load = 5;
+    let serverMati = false;
+    let seranganInterval = null;
+
+    function updateBeban() {
+        let elemen = document.getElementById("beban-server");
+        let textBeban = document.getElementById("bebanText");
+        let badge = document.getElementById("serverStatusBadge");
+
+        elemen.style.width = load + "%";
+        elemen.innerText = load + "%";
+        textBeban.innerText = load + "%";
+
+        if (load > 80) {
+            elemen.className = "bg-red-500 h-full rounded-full transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white";
+        } else if (load > 50) {
+            elemen.className = "bg-amber-500 h-full rounded-full transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white";
+        } else {
+            elemen.className = "bg-emerald-500 h-full rounded-full transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white";
+        }
+
+        if (load >= 100) {
+            serverMati = true;
+            elemen.innerText = "SERVER DOWN!";
+            badge.className = "px-2.5 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 animate-bounce";
+            badge.innerText = "CRITICAL / DOWN";
+        }
+    }
+
+    function kirimNormal() {
+        if(serverMati) {
+            showModal("Server Offline", "Server masih mengalami gangguan (DOWN)! Silakan klik 'Restart Server' terlebih dahulu.", "fa-triangle-exclamation", "bg-red-100 text-red-600");
+            return;
+        }
+        load = Math.min(100, load + 5);
+        updateBeban();
+        setTimeout(() => { 
+            if(!serverMati) { 
+                load = Math.max(5, load - 5); 
+                updateBeban(); 
+            } 
+        }, 2000);
+    }
+
+    function mulaiDoS() {
+        if(serverMati) return;
+        if(seranganInterval) clearInterval(seranganInterval);
+
+        seranganInterval = setInterval(() => {
+            load += 15;
+            if(load >= 100) {
+                load = 100;
+                clearInterval(seranganInterval);
+            }
+            updateBeban();
+        }, 300);
+    }
+
+    function resetServer() {
+        if(seranganInterval) clearInterval(seranganInterval);
+        load = 5;
+        serverMati = false;
+        let badge = document.getElementById("serverStatusBadge");
+        badge.className = "px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700";
+        badge.innerText = "ONLINE";
+        updateBeban();
+    }
+
+    function cobaLogin() {
+        let pass = document.getElementById("password").value;
+        let pesan = document.getElementById("pesan-login");
+        
+        if (pass.includes("' OR 1=1 --") || pass.includes("' OR '1'='1")) {
+            pesan.innerHTML = "<span class='text-emerald-400 font-bold'><i class='fa-solid fa-circle-check mr-1'></i> Akses Diberikan! (SQL Injection Berhasil)</span>";
+        } else if (pass.trim() === "") {
+            pesan.innerHTML = "<span class='text-slate-400'>Password tidak boleh kosong.</span>";
+        } else {
+            pesan.innerHTML = "<span class='text-red-400 font-bold'><i class='fa-solid fa-circle-xmark mr-1'></i> Login Gagal! Password salah.</span>";
+        }
+    }
+
+    function hitungSkorPG() {
+        let pgScore = 0;
+        for (let i = 1; i <= 20; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected && selected.value === kunciPG[i - 1]) {
+                pgScore++;
+            }
+        }
+        return pgScore;
+    }
+
+    function submitLKPD() {
+        const school = document.getElementById('selectSekolah').value;
+        const cls = document.getElementById('selectKelas').value;
+        const name = document.getElementById('selectNama').value;
+        const lkpdModule = "LKPD 2 : Ancaman dan Serangan";
+
+        if (!school || !cls || !name) {
+            showModal("Identitas Belum Lengkap", "Harap lengkapi Data Peserta Didik (Sekolah, Kelas, dan Nama Lengkap) terlebih dahulu!", "fa-user-slash", "bg-amber-100 text-amber-600");
+            return;
+        }
+
+        const pgScore = hitungSkorPG();
+        const finalScore = Math.round((pgScore / 20) * 100);
+
+        const payload = {
+            sekolah: school,
+            kelas: cls,
+            nama_lengkap: name,
+            pilihan_lkpd: lkpdModule,
+            durasi_detik: secondsElapsed,
+            skor_pg_benar: pgScore,
+            nilai_akhir: finalScore
+        };
+
+        const btnSubmit = document.getElementById('btn-submit-appscript');
+        const originalText = btnSubmit.innerHTML;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim Data LKPD...`;
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+
+        fetch(appsScriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            clearInterval(timerInterval);
+            showModal(
+                "Pekerjaan Terkirim!",
+                `Hasil LKPD berhasil terkirim ke sistem.\n\nSkor PG Benar: ${pgScore} dari 20 Soal\nNilai Akhir PG: ${finalScore} / 100`,
+                "fa-circle-check",
+                "bg-emerald-100 text-emerald-600"
+            );
+            btnSubmit.innerHTML = `<i class="fa-solid fa-check-double"></i> Hasil Berhasil Terkirim`;
+        })
+        .catch(err => {
+            showModal("Gagal Mengirim", "Terjadi kesalahan saat mengirim data: " + err.message, "fa-triangle-exclamation", "bg-red-100 text-red-600");
+            btnSubmit.innerHTML = originalText;
+            btnSubmit.disabled = false;
+            btnSubmit.classList.remove('opacity-75', 'cursor-not-allowed');
+        });
+    }
+
+    window.onload = function() {
+        initDataSiswa();
+        renderQuestions();
+    };
+</script>
+
+</body>
+</html>
