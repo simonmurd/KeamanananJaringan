@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 05: System Firewall & Traffic Filtering</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    @keyframes packet-move-right {
+      0% { left: 5%; opacity: 1; }
+      100% { left: 90%; opacity: 1; }
+    }
+    .anim-packet {
+      position: absolute;
+      animation: packet-move-right 2s linear infinite;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-300">
+          <i class="fa-solid fa-shield-halved text-2xl text-slate-800"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 05: System Firewall & Traffic Filtering</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Materi Stateful Inspection, Chains (Input/Output/Forward), NAT, DMZ & Layer 7 Web Filtering[cite: 1]</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Harap pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul laboratorium praktikum Firewall & Penyaringan Lalu Lintas.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Firewall & Traffic Filtering -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Pemrosesan Paket, Status Koneksi & NAT
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Packet Flow Architecture</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Firewall bertindak sebagai sistem pertahanan jaringan yang memeriksa paket data berdasarkan aturan (rules), status hubungan koneksi (Connection State), serta translasi alamat (NAT). Pemahaman rantai (chain) yang tepat mencegah miskonfigurasi fatal pada router[cite: 1].
+        </p>
+
+        <!-- Firewall Chains & Components Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-diagram-project text-slate-700 mr-1.5"></i> Ringkasan Firewall Chains & Fitur Utama</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Komponen / Chain</th>
+                  <th class="p-2.5 border-b border-slate-200">Arah & Alur Pemrosesan Paket Data</th>
+                  <th class="p-2.5 border-b border-slate-200">Contoh Kasus Penggunaan Utama</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Chain INPUT</td>
+                  <td class="p-2.5">Paket dari luar menuju langsung ke OS Router lokal[cite: 1].</td>
+                  <td class="p-2.5 font-semibold text-slate-800">Membatasi akses SSH/Winbox/Ping ke IP Gateway Router[cite: 1].</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Chain OUTPUT</td>
+                  <td class="p-2.5">Paket yang diinisiasi oleh OS Router lokal menuju jaringan luar[cite: 1].</td>
+                  <td class="p-2.5">NTP Client, DNS Request Router, Update Firmware OS[cite: 1].</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Chain FORWARD</td>
+                  <td class="p-2.5">Paket melintasi (transiting) router dari interface A ke interface B[cite: 1].</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Memblokir akses web client LAN ke situs luar / Internet[cite: 1].</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Destination NAT (Dst-NAT)</td>
+                  <td class="p-2.5">Mengubah IP/Port tujuan sebelum keputusan routing dilakukan[cite: 1].</td>
+                  <td class="p-2.5 font-semibold text-slate-800">Port Forwarding ke server lokal di subnet DMZ[cite: 1].</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-slate-700"></i> Status Koneksi (Connection Tracking / SPI)[cite: 1]
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              <b>1. NEW:</b> Paket inisiasi pembukaan koneksi baru[cite: 1].<br>
+              <b>2. ESTABLISHED:</b> Paket balasan yang tercatat di tabel Conntrack[cite: 1].<br>
+              <b>3. RELATED:</b> Paket sekunder yang berhubungan (misal FTP Data Channel)[cite: 1].<br>
+              <b>4. INVALID:</b> Paket liar/rusak yang tidak dikenal statusnya[cite: 1].
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-network-wired text-slate-700"></i> Persamaan Translasi Alamat Dst-NAT[cite: 1]
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              $$\text{Dst-NAT: } (\text{IP}_{\text{Publik}}:80) \longrightarrow (\text{IP}_{\text{DMZ\_Server}}:80)$$
+              Paket dari WAN menuju IP Publik Router diterjemahkan ke IP Privat Server DMZ secara aman tanpa mengekspos jaringan LAN internal[cite: 1].
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi System Firewall & Traffic Filtering
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Uji coba Chain Rules, Stateful Packet Inspection, Dst-NAT DMZ, dan Pemblokiran Layer 7 Regex[cite: 1].</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Studio Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 17: Firewall Chain Playground -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-code-branch text-slate-800"></i> Simulasi 17: Firewall Chain Playground[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Chain Rules Checkpoint[cite: 1]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Skenario: Blokir akses web (Port 80) PC A ke Internet, tetapi biarkan PC A tetap bisa Melakukan Ping ke Gateway Router[cite: 1].</p>
+
+              <!-- Playground Canvas UI -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 mb-3 text-xs space-y-3">
+                <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
+                  <div class="bg-white p-2 rounded-lg border border-slate-300 shadow-2xs">
+                    <i class="fa-solid fa-desktop text-slate-700 block text-base mb-1"></i>
+                    PC A (Client)<br><span class="text-slate-400 font-normal">192.168.1.10</span>
+                  </div>
+                  <div class="bg-white p-2 rounded-lg border border-slate-300 shadow-2xs relative">
+                    <i class="fa-solid fa-server text-slate-700 block text-base mb-1"></i>
+                    ROUTER OS<br><span class="text-slate-400 font-normal">GW: 192.168.1.1</span>
+                    <span id="chain-active-indicator" class="absolute -top-2 -right-2 bg-amber-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-mono">Input Active</span>
+                  </div>
+                  <div class="bg-white p-2 rounded-lg border border-slate-300 shadow-2xs">
+                    <i class="fa-solid fa-globe text-slate-700 block text-base mb-1"></i>
+                    INTERNET<br><span class="text-slate-400 font-normal">Situs Web Port 80</span>
+                  </div>
+                </div>
+
+                <!-- Form Konfigurasi Rule -->
+                <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+                  <div class="font-bold text-[11px] text-slate-800 border-b border-slate-100 pb-1">Filter Rule Config Panel</div>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                    <div>
+                      <label class="text-slate-500 font-semibold block">Chain Target</label>
+                      <select id="sim17-chain" class="w-full border border-slate-300 rounded p-1 font-mono text-slate-800 bg-white">
+                        <option value="input">input</option>
+                        <option value="forward">forward</option>
+                        <option value="output">output</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="text-slate-500 font-semibold block">Dst Port</label>
+                      <input type="text" id="sim17-port" value="80" class="w-full border border-slate-300 rounded p-1 font-mono text-slate-800">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 font-semibold block">Protocol</label>
+                      <input type="text" value="tcp" disabled class="w-full border border-slate-200 rounded p-1 font-mono bg-slate-50 text-slate-500">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 font-semibold block">Action</label>
+                      <select id="sim17-action" class="w-full border border-slate-300 rounded p-1 font-mono text-slate-800 bg-white">
+                        <option value="drop">drop</option>
+                        <option value="accept">accept</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Traffic Test Buttons & Animation Display -->
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="testSim17Traffic('ping')" class="py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-terminal mr-1"></i> Uji Ping ke Gateway[cite: 1]
+                  </button>
+                  <button onclick="testSim17Traffic('web')" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-globe mr-1"></i> Uji Web Access Port 80[cite: 1]
+                  </button>
+                </div>
+
+                <div id="sim17-result-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-12 overflow-y-auto">
+                  [SYSTEM READY] Silakan konfigurasikan Chain Rule dan jalankan pengujian lalu lintas...[cite: 1]
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji perbandingan Chain Input vs Forward[cite: 1].</span>
+              <button onclick="catatSimulasi(17)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 18: Stateful Packet Filtering Simulator -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-table-list text-slate-800"></i> Simulasi 18: Stateful Packet Filtering (SPI)[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Connection Tracking[cite: 1]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Analisis pencatatan status koneksi (NEW, ESTABLISHED, RELATED, INVALID) pada tabel Conntrack[cite: 1].</p>
+
+              <!-- Conntrack Split Pane UI -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 text-xs">
+                <!-- Packet Channel Controls (Left) -->
+                <div class="sm:col-span-5 border border-slate-200 rounded-xl p-2.5 bg-slate-50 space-y-2">
+                  <span class="font-bold text-slate-900 text-[10px] block border-b border-slate-200 pb-1">Kontrol Trafik Paket</span>
+                  <button onclick="initiateInternalConn()" class="w-full text-left p-1.5 bg-white border border-slate-300 rounded font-mono text-[9px] hover:border-slate-500 transition">
+                    1. Kirim TCP SYN (Client $\rightarrow$ Web Luar)[cite: 1]
+                  </button>
+                  <button onclick="receiveServerReply()" id="btn-reply-sim18" class="w-full text-left p-1.5 bg-white border border-slate-300 rounded font-mono text-[9px] hover:border-slate-500 transition" disabled>
+                    2. Terima SYN-ACK (Server $\rightarrow$ Client)[cite: 1]
+                  </button>
+                  <button onclick="simulateAttackerPacket()" class="w-full text-left p-1.5 bg-rose-50 border border-rose-300 text-rose-800 rounded font-mono text-[9px] hover:bg-rose-100 transition">
+                    3. Simulasi Serangan Luar (Unsolicited SYN)[cite: 1]
+                  </button>
+                </div>
+
+                <!-- Conntrack Table View (Right) -->
+                <div class="sm:col-span-7 bg-slate-900 text-white rounded-xl p-2.5 font-mono text-[9px] flex flex-col justify-between">
+                  <div>
+                    <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-1 mb-1 font-bold">
+                      <span>CONNTRACK TABLE (RAM)[cite: 1]</span>
+                      <span id="conntrack-count">0 Entries</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                      <table class="w-full text-left border-collapse">
+                        <thead>
+                          <tr class="text-slate-500 border-b border-slate-800">
+                            <th class="py-1">Proto</th>
+                            <th class="py-1">Src IP</th>
+                            <th class="py-1">Dst IP</th>
+                            <th class="py-1">State</th>
+                          </tr>
+                        </thead>
+                        <tbody id="conntrack-rows" class="divide-y divide-slate-800 text-slate-300">
+                          <tr>
+                            <td colspan="4" class="py-3 text-center text-slate-600 italic font-sans">Belum ada sesi koneksi terdaftar[cite: 1].</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div id="sim18-firewall-status" class="mt-2 text-[9px] text-amber-400 font-sans font-semibold border-t border-slate-800 pt-1">
+                    Rule Stateful: Accept ESTABLISHED,RELATED | Drop All Unsolicited NEW[cite: 1].
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji pertahanan firewall Stateful terhadap paket luar[cite: 1].</span>
+              <button onclick="catatSimulasi(18)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 19: NAT & Port Forwarding (DMZ Scenario) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-arrow-right-arrow-left text-slate-800"></i> Simulasi 19: Dst-NAT & DMZ Forwarding[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">3-Zone Topology[cite: 1]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Publikasikan Web Server Lokal di wilayah DMZ (192.168.50.10) ke Internet via IP Publik Router (202.152.1.1)[cite: 1].</p>
+
+              <!-- Dynamic Dst-NAT Form & Visual Topo -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 text-[10px] font-mono grid grid-cols-3 gap-1 text-center font-bold">
+                  <div class="text-slate-700">WAN: 202.152.1.1</div>
+                  <div class="text-slate-900">Router Firewall</div>
+                  <div class="text-slate-800">DMZ: 192.168.50.10:80</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <label class="text-slate-500 font-semibold block">Dst Address (Publik)</label>
+                    <input type="text" id="sim19-dst-addr" value="202.152.1.1" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 font-semibold block">Dst Port</label>
+                    <input type="text" id="sim19-dst-port" value="80" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 font-semibold block">To Addresses (DMZ IP)</label>
+                    <input type="text" id="sim19-to-addr" value="192.168.50.10" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 font-semibold block">To Ports</label>
+                    <input type="text" id="sim19-to-port" value="80" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="testSim19DMZAccess()" class="py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-cloud-arrow-down mr-1"></i> Uji Akses Luar ke 202.152.1.1[cite: 1]
+                  </button>
+                  <button onclick="testSim19LANIsolation()" class="py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-lock mr-1"></i> Verifikasi Isolasi LAN Privat[cite: 1]
+                  </button>
+                </div>
+
+                <div id="sim19-result-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-12 overflow-y-auto">
+                  [NAT READY] Tekan Uji Akses Luar untuk mensimulasikan penerjemahan paket Dst-NAT...[cite: 1]
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Pastikan IP/Port diterjemahkan tepat ke DMZ[cite: 1].</span>
+              <button onclick="catatSimulasi(19)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 20: Layer 7 Protocol / Web Filter -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-filter text-slate-800"></i> Simulasi 20: Layer 7 Web & File Filter[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Regex Pattern Matching[cite: 1]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Blokir domain terlarang dan ekstensi berkas berbahaya (.exe/.sh) pada Layer 7 (Application Layer)[cite: 1].</p>
+
+              <!-- Layer 7 Filter Console -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="space-y-2">
+                  <label class="font-bold text-slate-900 text-[10px]">L7 Pattern Regex Editor[cite: 1]</label>
+                  <div class="flex gap-2">
+                    <input type="text" id="sim20-regex-pattern" value="^.+(judi|game).+$" class="flex-1 border border-slate-300 rounded p-1.5 font-mono text-[10px] text-slate-800">
+                    <button onclick="loadSim20Preset('exe')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-mono text-[9px]">Preset Executable</button>
+                    <button onclick="loadSim20Preset('judi')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-mono text-[9px]">Preset Website</button>
+                  </div>
+                </div>
+
+                <!-- Simulation Browser Client Test Box -->
+                <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-2">
+                  <div class="flex gap-2">
+                    <input type="text" id="sim20-url-input" value="https://www.situsjudi.com" class="flex-1 border border-slate-300 rounded px-2 py-1 text-xs font-mono">
+                    <button onclick="testSim20L7Filter()" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 rounded font-bold text-xs transition">
+                      Kirim HTTP Request[cite: 1]
+                    </button>
+                  </div>
+                </div>
+
+                <div id="sim20-browser-display" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-12 overflow-y-auto">
+                  Browser Simulation: Siap menerima perintah URL...[cite: 1]
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji pencocokan string regex terhadap URL/berkas[cite: 1].</span>
+              <button onclick="catatSimulasi(20)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum System Firewall & Traffic Filtering
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Catatan log eksperimen yang direkap secara otomatis dari modul laboratorium simulasi di atas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Parameter Konfigurasi / Pengujian</th>
+                <th class="px-4 py-3">Hasil / Pengukuran Kinerja</th>
+                <th class="px-4 py-3">Status Evaluasi Keamanan</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Firewall & Traffic Filtering
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman teori dan praktikum Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+          <button id="btn-download-pdf" onclick="cetakLaporan()" class="hidden flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Cetak / Unduh PDF
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-slate-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD 05 Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil dikirim ke server guru.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+          <button onclick="cetakLaporan()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-pdf"></i> Cetak Laporan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-slate-300">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-slate-900 text-base mb-1" id="confirm-title">Konfirmasi Tindakan</h4>
+      <p class="text-xs text-slate-600 mb-5" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      <div class="flex gap-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-yes" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let waktuMulai = 0;
+    let masterDataSiswa = [];
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      masterDataSiswa = [];
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          masterDataSiswa.push({ sekolah, kelas, nama });
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.createElement('option');
+          opt.value = nama;
+          opt.textContent = nama;
+          selNama.appendChild(opt);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-800 font-medium px-3 py-1 rounded-full border border-slate-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // Question Bank: 20 Items for Modul 5 (Firewall Chains, SPI, NAT DMZ, L7 Regex)
+    const questionBank = [
+      { id: 1, q: "Rantai pemrosesan paket firewall yang menangani paket khusus ditujukan langsung ke OS Router dinamakan...", options: ["A. Chain Input", "B. Chain Output", "C. Chain Forward", "D. Chain Prerouting", "E. Chain Postrouting"], ans: "A" },
+      { id: 2, q: "Rantai penyaringan firewall yang menangani lalu lintas paket data yang melintasi (transiting) router dari LAN ke Internet dinamakan...", options: ["A. Chain Input", "B. Chain Forward", "C. Chain Output", "D. Chain Dstnat", "E. Chain Srcnat"], ans: "B" },
+      { id: 3, q: "Jika seorang administrator sengaja memasang rule Drop Port 80 pada Chain Input untuk IP Client PC A, dampaknya adalah...", options: ["A. Akses HTTP PC A ke internet terblokir sempurna", "B. Akses Ping PC A ke IP Gateway Router ikut mati total", "C. Router langsung reboot otomatis", "D. Seluruh port TCP PC A terbuka bebas", "E. IP Address PC A berubah otomatis"], ans: "B" },
+      { id: 4, q: "Tindakan penempatan rule yang benar untuk memblokir akses web client PC A ke internet tanpa mengganggu Ping ke Gateway adalah...", options: ["A. Pasang Drop Port 80 pada Chain Input", "B. Pasang Drop Port 80 pada Chain Forward", "C. Pasang Drop ICMP pada Chain Output", "D. Pasang Accept All pada Chain Input", "E. Hapus seluruh tabel routing"], ans: "B" },
+      { id: 5, q: "Fitur keamanan firewall yang mencatat dan mengenali hubungan sesi status data dua arah dinamakan...", options: ["A. Static Packet Filter", "B. Stateful Packet Inspection (SPI) / Conntrack", "C. Proxy Server", "D. Port Security", "E. MAC Filtering"], ans: "B" },
+      { id: 6, q: "Status koneksi pada tabel Conntrack untuk paket inisiasi pertama yang hendak membuka sesi koneksi baru adalah...", options: ["A. NEW", "B. ESTABLISHED", "C. RELATED", "D. INVALID", "E. UNTRACKED"], ans: "A" },
+      { id: 7, q: "Status koneksi pada tabel Conntrack untuk paket balasan dari server yang telah terdaftar pada sesi sebelumnya adalah...", options: ["A. NEW", "B. ESTABLISHED", "C. RELATED", "D. INVALID", "E. TIMEOUT"], ans: "B" },
+      { id: 8, q: "Aturan Stateful Firewall optimal untuk mengamankan jaringan LAN dari serangan inisiasi luar tanpa mengganggu balasan browser adalah...", options: ["A. Accept ESTABLISHED & RELATED pada Chain Forward, disusul Drop All Unsolicited NEW", "B. Drop All ESTABLISHED connections", "C. Accept All NEW packets from WAN", "D. Disable Connection Tracking", "E. Forward all incoming ICMP"], ans: "A" },
+      { id: 9, q: "Teknologi translasi alamat IP yang digunakan untuk mempublikasikan Web Server lokal di subnet DMZ ke Internet dinamakan...", options: ["A. Source NAT (Masquerade)", "B. Destination NAT (Dst-NAT / Port Forwarding)", "C. Dynamic DNS", "D. Static Routing", "E. VLAN Tagging"], ans: "B" },
+      { id: 10, q: "Wilayah subnet khusus yang memisahkan server publik (misal Web Server) dari jaringan privat LAN dinamakan...", options: ["A. Local Area Network (LAN)", "B. Demilitarized Zone (DMZ)", "C. Wide Area Network (WAN)", "D. Autonomous System (AS)", "E. Virtual Private Network (VPN)"], ans: "B" },
+      { id: 11, q: "Keuntungan utama menempatkan Server Web pada subnet DMZ dengan konfigurasi Dst-NAT adalah...", options: ["A. Mempercepat koneksi internet pengguna LAN", "B. Server dapat diakses luar, tetapi jika server diretas, jaringan internal LAN tetap aman terisolasi", "C. Mengubah alamat MAC server secara dinamis", "D. Menghilangkan kebutuhan alamat IP Publik", "E. Menghapus seluruh log firewall"], ans: "B" },
+      { id: 12, q: "Parameter konfigurasi Dst-NAT yang menentukan IP tujuan luar dan Port layanan yang hendak di-forward adalah...", options: ["A. Dst-Address & Dst-Port", "B. Src-Address & Src-Port", "C. Out-Interface & Out-Bridge", "D. To-Addresses & To-Ports", "E. Action: Masquerade"], ans: "A" },
+      { id: 13, q: "Pemfilteran konten pada Layer 7 (Application Layer) menggunakan inspeksi muatan data dan pola karakter dinamakan...", options: ["A. Port Filtering", "B. Regular Expression (Regex) / Layer 7 Protocol", "C. IP Subnetting", "D. MAC Spoofing", "E. ICMP Echo Request"], ans: "B" },
+      { id: 14, q: "Pola Regex Layer 7 yang tepat untuk memblokir seluruh nama domain yang mengandung kata 'judi' atau 'game' adalah...", options: ["A. ^.+(judi|game).+$", "B. *judi*game*", "C. block-all-games", "D. 192.168.1.0/24", "E. tcp:80,443"], ans: "A" },
+      { id: 15, q: "Pola Regex Layer 7 yang tepat untuk menghentikan pengunduhan berkas eksekusi (.exe / .sh) pada jaringan LAN adalah...", options: ["A. ^.*\\.(exe|sh|bat)$", "B. download-deny", "C. http-drop-file", "D. port-80-exe", "E. deny-all"], ans: "A" },
+      { id: 16, q: "Rantai pemrosesan paket firewall yang diinisiasi langsung dari dalam OS Router menuju ke server NTP luar dinamakan...", options: ["A. Chain Input", "B. Chain Output", "C. Chain Forward", "D. Chain Dstnat", "E. Chain Prerouting"], ans: "B" },
+      { id: 17, q: "Action firewall yang berfungsi menolak paket secara senyap tanpa mengirimkan balasan pesan kesalahan ke pengirim dinamakan...", options: ["A. REJECT", "B. DROP", "C. ACCEPT", "D. LOG", "E. PASSTHROUGH"], ans: "B" },
+      { id: 18, q: "Action firewall yang menolak paket dan mengirimkan balasan pemberitahuan (ICMP Destination Unreachable / TCP RST) dinamakan...", options: ["A. DROP", "B. REJECT", "C. TARPIT", "D. PASSTHROUGH", "E. REDIRECT"], ans: "B" },
+      { id: 19, q: "Jika paket TCP luar dikirim langsung ke Client LAN tanpa ada entri NEW/ESTABLISHED sebelumnya, status koneksi paket tersebut adalah...", options: ["A. ESTABLISHED", "B. INVALID / Unsolicited NEW", "C. RELATED", "D. PASSTHROUGH", "E. ACCEPTED"], ans: "B" },
+      { id: 20, q: "Mekanisme pengubahan IP privat LAN menjadi IP publik saat client mengakses internet dinamakan...", options: ["A. Dst-NAT", "B. Source NAT (Src-NAT / Masquerade)", "C. Port Forwarding", "D. Layer 7 Filter", "E. DMZ Forwarding"], ans: "B" }
+    ];
+
+    // --- SIMULASI 17: FIREWALL CHAIN PLAYGROUND LOGIC ---
+    let sim17LastTest = null;
+
+    function testSim17Traffic(type) {
+      const chain = document.getElementById('sim17-chain').value;
+      const port = document.getElementById('sim17-port').value.trim();
+      const action = document.getElementById('sim17-action').value;
+      const resultBox = document.getElementById('sim17-result-box');
+      const chainInd = document.getElementById('chain-active-indicator');
+
+      chainInd.innerText = `Chain ${chain.toUpperCase()} Active`;
+
+      if (type === 'ping') {
+        if (chain === 'input' && action === 'drop') {
+          resultBox.innerHTML = `<span class="text-rose-400">[FAILED] ICMP Ping Packet $\rightarrow$ Router Input Checkpoint $\rightarrow$ DROPPED! Ping ke Gateway mati total karena disaring di pintu masuk router![cite: 1]</span>`;
+          sim17LastTest = { type: 'Ping Gateway', result: 'DROPPED (Mati Total)', eval: 'WRONG CHAIN (Input Error)' };
+          showToast("Pengujian Gagal", "Ping ke Gateway mati total akibat rule Drop pada Chain Input!", "warning");
+        } else {
+          resultBox.innerHTML = `<span class="text-emerald-400">[SUCCESS] ICMP Ping Packet $\rightarrow$ Router Input Checkpoint $\rightarrow$ ACCEPTED! Ping ke Gateway Router 192.168.1.1 Berhasil![cite: 1]</span>`;
+          sim17LastTest = { type: 'Ping Gateway', result: 'ACCEPTED (Berhasil)', eval: 'CORRECT (Ping Alive)' };
+          showToast("Pengujian Sukses", "Ping Gateway lancar!", "success");
+        }
+      } else if (type === 'web') {
+        if (chain === 'forward' && port === '80' && action === 'drop') {
+          resultBox.innerHTML = `<span class="text-emerald-400">[SUCCESS TARGET] TCP Port 80 Packet $\rightarrow$ Chain Forward Checkpoint $\rightarrow$ DROPPED! Web Client ke Internet terblokir presisi.[cite: 1]</span>`;
+          sim17LastTest = { type: 'Web Access Port 80', result: 'DROPPED (Terblokir)', eval: 'PASS (Konstruksi Tepat)' };
+          showToast("Target Tercapai", "Akses web melintasi router terblokir sempurna di Chain Forward!", "success");
+        } else if (chain === 'input' && port === '80' && action === 'drop') {
+          resultBox.innerHTML = `<span class="text-rose-400">[MISCONFIGURATION] Packet HTTP (Port 80) melintasi router via Chain Forward, BUKAN Chain Input. Web luar tetap TERBUKA![cite: 1]</span>`;
+          sim17LastTest = { type: 'Web Access Port 80', result: 'BYPASSED (Situs Terbuka)', eval: 'FAIL (Salah Chain Target)' };
+          showToast("Miskonfigurasi", "Rule Port 80 di Chain Input tidak memblokir lalu lintas melintas!", "warning");
+        } else {
+          resultBox.innerHTML = `<span class="text-amber-400">[INFO] Trafik Web Port 80 diizinkan melintas via Chain ${chain.toUpperCase()} (Action: ${action}).[cite: 1]</span>`;
+          sim17LastTest = { type: 'Web Access Port 80', result: 'ACCEPTED', eval: 'ALLOW ALL' };
+        }
+      }
+    }
+
+
+    // --- SIMULASI 18: STATEFUL PACKET FILTERING LOGIC ---
+    let conntrackState = [];
+
+    function initiateInternalConn() {
+      conntrackState = [
+        { proto: 'tcp', src: '192.168.1.10:49152', dst: '93.184.216.34:80', state: 'NEW' }
+      ];
+      renderConntrack();
+      document.getElementById('btn-reply-sim18').disabled = false;
+      document.getElementById('sim18-firewall-status').innerHTML = `<span class="text-amber-400">[CONNTRACK] Paket TCP SYN terdeteksi. Entri baru dibuat dengan status NEW.[cite: 1]</span>`;
+      showToast("Paket Inisiasi", "Paket NEW dicatat dalam tabel Conntrack.", "info");
+    }
+
+    function receiveServerReply() {
+      if (conntrackState.length > 0) {
+        conntrackState[0].state = 'ESTABLISHED';
+        renderConntrack();
+        document.getElementById('sim18-firewall-status').innerHTML = `<span class="text-emerald-400">[MATCHED] Paket SYN-ACK mencocokkan entri tabel. Status berubah menjadi ESTABLISHED $\rightarrow$ ACCEPTED.[cite: 1]</span>`;
+        showToast("Paket Balasan", "Status koneksi diperbarui menjadi ESTABLISHED!", "success");
+      }
+    }
+
+    function simulateAttackerPacket() {
+      document.getElementById('sim18-firewall-status').innerHTML = `<span class="text-rose-400">[ATTACK BLOCKED] Attacker (203.0.113.50) mengirim TCP SYN acak. Tidak ada entri di Conntrack $\rightarrow$ DROPPED![cite: 1]</span>`;
+      showToast("Serangan Diblokir", "Unsolicited NEW Packet dari luar langsung terbuang (DROP).", "warning");
+    }
+
+    function renderConntrack() {
+      const rows = document.getElementById('conntrack-rows');
+      document.getElementById('conntrack-count').innerText = `${conntrackState.length} Entries`;
+      rows.innerHTML = '';
+      if (conntrackState.length === 0) {
+        rows.innerHTML = `<tr><td colspan="4" class="py-3 text-center text-slate-600 italic font-sans">Belum ada sesi koneksi terdaftar[cite: 1].</td></tr>`;
+        return;
+      }
+      conntrackState.forEach(c => {
+        let badge = c.state === 'NEW' ? 'text-amber-400' : 'text-emerald-400';
+        rows.innerHTML += `
+          <tr class="border-b border-slate-800">
+            <td class="py-1 uppercase">${c.proto}</td>
+            <td class="py-1">${c.src}</td>
+            <td class="py-1">${c.dst}</td>
+            <td class="py-1 font-bold ${badge}">${c.state}</td>
+          </tr>
+        `;
+      });
+    }
+
+
+    // --- SIMULASI 19: Dst-NAT & DMZ LOGIC ---
+    let sim19LastResult = null;
+
+    function testSim19DMZAccess() {
+      const dstAddr = document.getElementById('sim19-dst-addr').value.trim();
+      const dstPort = document.getElementById('sim19-dst-port').value.trim();
+      const toAddr = document.getElementById('sim19-to-addr').value.trim();
+      const toPort = document.getElementById('sim19-to-port').value.trim();
+      const res = document.getElementById('sim19-result-box');
+
+      if (dstAddr === "202.152.1.1" && dstPort === "80" && toAddr === "192.168.50.10" && toPort === "80") {
+        res.innerHTML = `<span class="text-emerald-400">[NAT TRANSLATED] Request ke 202.152.1.1:80 diterjemahkan oleh Router ke Server DMZ 192.168.50.10:80. Akses Web Server Sukses![cite: 1]</span>`;
+        sim19LastResult = { test: 'Public DMZ Web Access', res: 'SUCCESS (Dst-NAT Active)', eval: 'PASS' };
+        showToast("Dst-NAT Berhasil", "Paket luar diteruskan dengan tepat ke Server DMZ!", "success");
+      } else {
+        res.innerHTML = `<span class="text-rose-400">[NAT ERROR] Alamat IP/Port penerjemahan tidak cocok dengan subnet DMZ 192.168.50.10:80![cite: 1]</span>`;
+        sim19LastResult = { test: 'Public DMZ Web Access', res: 'FAILED (NAT Mismatch)', eval: 'FAIL' };
+        showToast("NAT Gagal", "Periksa kembali To-Addresses dan To-Ports!", "warning");
+      }
+    }
+
+    function testSim19LANIsolation() {
+      const res = document.getElementById('sim19-result-box');
+      res.innerHTML = `<span class="text-emerald-400">[SECURITY VERIFIED] Pengguna luar mencoba mengakses LAN Privat (192.168.10.15) $\rightarrow$ DROPPED! Subnet LAN terisolasi sempurna.[cite: 1]</span>`;
+      sim19LastResult = { test: 'LAN Isolation Test', res: 'SECURE (Private LAN Isolated)', eval: 'PASS' };
+      showToast("Isolasi Aman", "Jaringan LAN Privat tidak dapat ditembus pengguna internet.", "info");
+    }
+
+
+    // --- SIMULASI 20: LAYER 7 REGEX FILTER LOGIC ---
+    let sim20LastResult = null;
+
+    function loadSim20Preset(type) {
+      const pat = document.getElementById('sim20-regex-pattern');
+      const url = document.getElementById('sim20-url-input');
+      if (type === 'judi') {
+        pat.value = "^.+(judi|game).+$";
+        url.value = "https://www.situsjudi.com";
+      } else if (type === 'exe') {
+        pat.value = "^.*\\.(exe|sh|bat)$";
+        url.value = "https://server-down.org/installer.exe";
+      }
+    }
+
+    function testSim20L7Filter() {
+      const pat = document.getElementById('sim20-regex-pattern').value.trim();
+      const url = document.getElementById('sim20-url-input').value.trim();
+      const disp = document.getElementById('sim20-browser-display');
+
+      try {
+        const regex = new RegExp(pat, 'i');
+        if (regex.test(url)) {
+          disp.innerHTML = `<span class="text-rose-400">[BLOCKED BY L7 FIREWALL] URL "${url}" cocok dengan pola Regex "${pat}". Action: DROP (Connection Refused / RST).[cite: 1]</span>`;
+          sim20LastResult = { url: url, pattern: pat, action: 'DROPPED (Blocked by L7)', eval: 'PASS (Filtered)' };
+          showToast("L7 Blocked", "Lalu lintas terlarang berhasil disaring oleh Layer 7 Filter!", "warning");
+        } else {
+          disp.innerHTML = `<span class="text-emerald-400">[ALLOWED] URL "${url}" tidak memicu pola Regex. Akses berjalan lancar (200 OK).[cite: 1]</span>`;
+          sim20LastResult = { url: url, pattern: pat, action: 'ACCEPTED (Passed L7)', eval: 'ALLOW' };
+          showToast("L7 Allowed", "Akses URL diizinkan melintas.", "info");
+        }
+      } catch (e) {
+        disp.innerHTML = `<span class="text-rose-400">[REGEX ERROR] Pola Regular Expression tidak valid!</span>`;
+      }
+    }
+
+
+    // RECORD SIMULATION LOGS TO TABLE
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 17) {
+        if (!sim17LastTest) {
+          showToast("Perhatian", "Jalankan pengujian lalu lintas pada Simulasi 17 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 17: Firewall Chain Playground",
+          param: `Chain: ${document.getElementById('sim17-chain').value}, Port: ${document.getElementById('sim17-port').value}, Action: ${document.getElementById('sim17-action').value}`,
+          hasil: `${sim17LastTest.type} $\rightarrow$ ${sim17LastTest.result}`,
+          status: sim17LastTest.eval
+        };
+      } else if (simNum === 18) {
+        logEntry = {
+          modul: "Simulasi 18: Stateful Packet Inspection",
+          param: `Entries: ${conntrackState.length}, Conntrack Rules Active`,
+          hasil: "Unsolicited NEW packets dropped from WAN",
+          status: "PASS (Stateful Protection Active)"
+        };
+      } else if (simNum === 19) {
+        if (!sim19LastResult) {
+          showToast("Perhatian", "Jalankan pengujian Dst-NAT DMZ pada Simulasi 19 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 19: Dst-NAT & DMZ Forwarding",
+          param: `Dst: ${document.getElementById('sim19-dst-addr').value}:${document.getElementById('sim19-dst-port').value} $\rightarrow$ ${document.getElementById('sim19-to-addr').value}:${document.getElementById('sim19-to-port').value}`,
+          hasil: sim19LastResult.res,
+          status: sim19LastResult.eval
+        };
+      } else if (simNum === 20) {
+        if (!sim20LastResult) {
+          showToast("Perhatian", "Jalankan pengujian Layer 7 Filter pada Simulasi 20 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 20: Layer 7 Web Filter",
+          param: `Pattern: ${sim20LastResult.pattern}, URL: ${sim20LastResult.url}`,
+          hasil: sim20LastResult.action,
+          status: sim20LastResult.eval
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum berhasil disimpan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
+        if (row.status.includes("FAIL") || row.status.includes("WRONG") || row.status.includes("DROPPED")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+        if (row.status.includes("PASS") || row.status.includes("CORRECT")) badgeColor = "bg-emerald-50 text-emerald-800 border border-emerald-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Parameter Konfigurasi,Hasil Pengukuran,Status Evaluasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Firewall_Traffic_Filtering_LKPD05_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBank.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-slate-900">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let skorBenar = 0;
+      questionBank.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden', 'bg-slate-100', 'text-slate-800');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-slate-800 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-800 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBank.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+      const pilihanLkpdTerpilih = "LKPD 05: System Firewall & Traffic Filtering";
+
+      const payload = {
+        sekolah: sekolah,
+        nama_lengkap: nama,
+        pilihan_lkpd: pilihanLkpdTerpilih,
+        kelas: kelas,
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir,
+        tabelPengamatan: tableData
+      };
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda memahami perbedaannya Chain Input vs Forward, SPI Conntrack, Dst-NAT DMZ, dan L7 Web Filtering.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali perbedaan Chain Input (lokal router) vs Forward (lalu lintas melintas).";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi Dst-NAT DMZ dan penulisan Regex Layer 7 Filter.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      const statusKirimEl = document.getElementById('status-kirim-gas');
+      statusKirimEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-slate-600"></i> Mengirim data ke server guru...`;
+      document.getElementById('modal-result').classList.remove('hidden');
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil terkirim ke spreadsheet guru!`;
+      } catch (err) {
+        console.error("Gagal mengirim data via fetch:", err);
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-600"></i> Gagal otomatis via Fetch (Offline).`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function cetakLaporan() {
+      closeModal();
+      window.print();
+    }
+
+    function resetFormPrompt() {
+      showConfirm("Reset LKPD", "Apakah Anda yakin ingin meriset seluruh isian dan data praktikum LKPD 05 ini?", () => {
+        document.getElementById('sel-sekolah').value = "";
+        updateDropdownKelas();
+        tableData = [];
+        waktuMulai = 0;
+        renderTabelPengamatan();
+        document.getElementById('form-quiz').reset();
+        questionBank.forEach(q => {
+          const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+        });
+        document.getElementById('btn-download-pdf').classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("Reset Selesai", "Formulir telah dikembalikan ke kondisi awal.", "info");
+      });
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = "bg-slate-900 text-white border-slate-700";
+      let icon = "fa-circle-info text-slate-300";
+
+      toast.className = `p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-xs min-w-[260px] max-w-xs transition transform translate-y-2 opacity-0 pointer-events-auto ${bg}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <p class="font-bold mb-0.5">${title}</p>
+          <p class="text-slate-300 leading-tight">${message}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      modal.classList.remove('hidden');
+
+      const btnYes = document.getElementById('btn-confirm-yes');
+      const btnCancel = document.getElementById('btn-confirm-cancel');
+
+      const handleYes = () => { cleanup(); onConfirm(); };
+      const handleCancel = () => { cleanup(); };
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', handleYes);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnYes.addEventListener('click', handleYes);
+      btnCancel.addEventListener('click', handleCancel);
+    }
+
+    window.onload = function () {
+      initDatabaseSiswa();
+      renderQuiz();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 06: Secure Tunneling & Remote Access (VPN)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    /* Animation Pipe Packet */
+    @keyframes pipe-slide {
+      0% { left: 4%; opacity: 1; }
+      50% { left: 48%; }
+      100% { left: 90%; opacity: 1; }
+    }
+    .packet-animating {
+      animation: pipe-slide 2.5s ease-in-out forwards;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-300">
+          <i class="fa-solid fa-user-lock text-2xl text-slate-800"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 06: Secure Tunneling & Remote Access (VPN)</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Enkripsi Jalur Publik, Protokol VPN (L2TP/IPsec, OpenVPN, WireGuard), Site-to-Site & Remote Access</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Harap pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul laboratorium praktikum Secure Tunneling & VPN.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori VPN & Enkripsi Jalur Publik -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Virtual Private Network (VPN) & Secure Tunneling
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Encryption & Tunneling Protocols</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          VPN menyedia lorong aman (Encrypted Tunnel) di atas jaringan publik internet yang tidak aman. Dengan enkripsi dan enkapsulasi paket, data yang melintas dilindungi dari penyadapan (Eavesdropping) serta manipulasi pihak ketiga.
+        </p>
+
+        <!-- Dynamic Comparison Table VPN Protocols -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-table-columns text-slate-700 mr-1.5"></i> Perbandingan Protokol VPN Utama</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Protokol VPN</th>
+                  <th class="p-2.5 border-b border-slate-200">Mekanisme Kriptografi / Key Exchange</th>
+                  <th class="p-2.5 border-b border-slate-200">Performa & Overhead</th>
+                  <th class="p-2.5 border-b border-slate-200">Karakteristik Utama</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">L2TP / IPsec</td>
+                  <td class="p-2.5">Phase 1 ISAKMP (PSK/Sertifikat) + Phase 2 IPsec ESP</td>
+                  <td class="p-2.5">Sedang (Overhead ganda L2TP + IPsec)</td>
+                  <td class="p-2.5">Dukungan bawaan native di hampir seluruh OS desktop & mobile.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">OpenVPN</td>
+                  <td class="p-2.5">TLS/SSL Handshake (OpenSSL / Public Key Infrastructure)</td>
+                  <td class="p-2.5">Sedang - Berat (User-space processing)</td>
+                  <td class="p-2.5">Sangat fleksibel, mampu berjalan via TCP/UDP di port 443 (Anti-blocking).</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">WireGuard</td>
+                  <td class="p-2.5">Noise Protocol Framework (Pertukaran Public/Private Key)</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Sangat Tinggi & Ringan (Kernel-level)</td>
+                  <td class="p-2.5 font-semibold text-slate-800">Kode sangat ringkas (~4000 baris), koneksi instan, tanpa overhead status negotiation.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-network-wired text-slate-700"></i> Arsitektur Site-to-Site VPN
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              Menghubungkan dua lokasi jaringan lokal utuh (misal Router Kantor Cabang Singkawang dengan Router Kantor Pusat Jakarta) melalui lorong permanen terenkripsi. Seluruh perangkat LAN di kedua sisi saling berkomunikasi transparan tanpa install software client di PC.
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-laptop-house text-slate-700"></i> Arsitektur Remote Access VPN
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              Menghubungkan perangkat individu (seperti Laptop Pegawai WFH) langsung ke Gateway VPN kantor. Perangkat pegawai secara virtual dial-up untuk memperoleh Alokasi Virtual IP lokal privat kantor agar bisa mengakses resource internal secara aman.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Secure Tunneling & Remote Access (VPN)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Simulasi Enkripsi Jalur Publik, WireGuard Site-to-Site, L2TP Remote Access & Mechanism Kill-Switch[cite: 1].</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Studio Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 21: Tunnel Enkripsi (Plaintext vs VPN Tunnel) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-shield-halved text-slate-800"></i> Simulasi 21: Tunnel Enkripsi (Plaintext vs VPN)[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Packet Inspection</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Bandingkan keamanan transmisi data tanpa enkripsi (Plaintext) vs lorong terenkripsi (VPN Tunnel) saat disadap Sniffer[cite: 1].</p>
+
+              <!-- Pipe Layout UI -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 mb-3 text-xs space-y-4 grid-bg-pattern relative overflow-hidden">
+                
+                <!-- Sniffer Visual (Middle) -->
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 shadow-md z-10 text-center">
+                  <i class="fa-solid fa-eye text-rose-500 text-sm block"></i>
+                  <span class="text-[9px] font-bold text-slate-700">Wireshark Sniffer</span>
+                </div>
+
+                <!-- Pipa Atas: Non-VPN -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[10px] font-bold text-slate-500">
+                    <span>Jalur Internet Biasa (Plaintext)</span>
+                    <span id="sim21-status-top" class="text-slate-400">Idle</span>
+                  </div>
+                  <div class="relative h-10 border border-slate-300 bg-white rounded-lg flex items-center px-2 overflow-hidden">
+                    <div id="sim21-packet-top" class="absolute hidden bg-rose-100 border border-rose-400 text-rose-900 px-2 py-0.5 rounded font-mono text-[9px] font-bold z-0">
+                      User: admin | Pass: Rahasia123
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pipa Bawah: VPN Tunnel -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[10px] font-bold text-slate-700">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-lock text-emerald-600"></i> VPN Tunnel (Encrypted)</span>
+                    <span id="sim21-status-bottom" class="text-slate-400">Idle</span>
+                  </div>
+                  <div class="relative h-10 border-2 border-slate-400 bg-slate-100 rounded-lg flex items-center px-2 overflow-hidden">
+                    <div id="sim21-packet-bottom" class="absolute hidden bg-emerald-100 border border-emerald-500 text-emerald-900 px-2 py-0.5 rounded font-mono text-[9px] font-bold z-0">
+                      e8a9f01b3c....
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Console Box -->
+                <div id="sim21-sniffer-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-14 overflow-y-auto">
+                  [SNIFFER MONITOR] Siap mendeteksi paket melintas di jalur publik...
+                </div>
+              </div>
+
+              <!-- Action Controls -->
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="runSim21Plaintext()" class="py-1.5 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-lg text-[10px] transition">
+                  <i class="fa-solid fa-paper-plane mr-1"></i> Kirim Data via Internet Biasa
+                </button>
+                <button onclick="runSim21VPN()" class="py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] transition">
+                  <i class="fa-solid fa-vault mr-1"></i> Kirim Data via VPN Tunnel
+                </button>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-3">
+              <span class="text-slate-600 font-medium text-[11px]">Amati keterbacaan data oleh Wireshark Sniffer[cite: 1].</span>
+              <button onclick="catatSimulasi(21)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 22: Site-to-Site WireGuard Configurator -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-key text-slate-800"></i> Simulasi 22: Site-to-Site WireGuard Configurator[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Public Key Auth</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Konfigurasi Site-to-Site VPN antar Router Singkawang dan Jakarta via pertukaran Public Key[cite: 1].</p>
+
+              <!-- WireGuard Config Panel -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                
+                <div class="grid grid-cols-2 gap-3 text-[10px]">
+                  <!-- Left Router: Singkawang -->
+                  <div class="p-2 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+                    <div class="font-bold text-slate-900 flex justify-between">
+                      <span>Router Singkawang</span>
+                      <span class="text-slate-400 font-mono">192.168.10.0/24</span>
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Public Key</label>
+                      <input type="text" id="sim22-pub-skw" readonly placeholder="Klik Generate Key" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px] bg-white">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Peer Public Key (Jakarta)</label>
+                      <input type="text" id="sim22-peer-skw" placeholder="Masukkan PubKey Jakarta" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px]">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Allowed IPs</label>
+                      <input type="text" id="sim22-allow-skw" value="192.168.20.0/24" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px]">
+                    </div>
+                  </div>
+
+                  <!-- Right Router: Jakarta -->
+                  <div class="p-2 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+                    <div class="font-bold text-slate-900 flex justify-between">
+                      <span>Router Jakarta</span>
+                      <span class="text-slate-400 font-mono">192.168.20.0/24</span>
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Public Key</label>
+                      <input type="text" id="sim22-pub-jkt" readonly placeholder="Klik Generate Key" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px] bg-white">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Peer Public Key (Singkawang)</label>
+                      <input type="text" id="sim22-peer-jkt" placeholder="Masukkan PubKey Singkawang" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px]">
+                    </div>
+                    <div>
+                      <label class="text-slate-500 block">Allowed IPs</label>
+                      <input type="text" id="sim22-allow-jkt" value="192.168.10.0/24" class="w-full border border-slate-300 rounded p-1 font-mono text-[9px]">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button onclick="generateSim22Keys()" class="py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg text-[9px] transition">
+                    1. Generate Keypair
+                  </button>
+                  <button onclick="initiateSim22Tunnel()" class="py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[9px] transition">
+                    2. Initiate Tunnel
+                  </button>
+                  <button onclick="testSim22CrossPing()" class="py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg text-[9px] transition">
+                    3. Uji Cross-Ping
+                  </button>
+                </div>
+
+                <div id="sim22-status-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-12 overflow-y-auto">
+                  [WIREGUARD READY] Tekan Generate Keypair untuk mengawali pairing...
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Pastikan Allowed IPs saling menunjuk subnet lawan[cite: 1].</span>
+              <button onclick="catatSimulasi(22)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 23: Remote Worker Access (L2TP/IPsec) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-laptop-house text-slate-800"></i> Simulasi 23: Remote Worker Access (L2TP/IPsec)[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Dial-Up AAA</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Dial-up VPN L2TP/IPsec dari Laptop Pegawai WFH ke Gateway VPN Kantor Pusat[cite: 1].</p>
+
+              <!-- Form Dial-Up UI -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex justify-between text-[10px]">
+                  <div><span class="font-bold">Laptop Pegawai IP:</span> <span class="font-mono text-slate-600">36.80.12.99 (ISP)</span></div>
+                  <div><span class="font-bold">Target Gateway IP:</span> <span class="font-mono text-slate-600">202.152.1.1</span></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <label class="text-slate-500 block">Server Address</label>
+                    <input type="text" id="sim23-server" value="202.152.1.1" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 block">Pre-Shared Key (PSK)</label>
+                    <input type="text" id="sim23-psk" value="SangatRahasia2026" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 block">Username</label>
+                    <input type="text" id="sim23-user" value="staf_lapangan" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                  <div>
+                    <label class="text-slate-500 block">Password</label>
+                    <input type="password" id="sim23-pass" value="pass123" class="w-full border border-slate-300 rounded p-1 font-mono">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="connectSim23L2TP()" class="py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-plug mr-1"></i> [Connect] L2TP Dial-Up
+                  </button>
+                  <button onclick="testSim23DBAccess()" class="py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-database mr-1"></i> Akses DB Internal (172.16.1.10)
+                  </button>
+                </div>
+
+                <div id="sim23-result-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-12 overflow-y-auto">
+                  [L2TP/IPsec DISCONNECTED] Isikan kredensial dan klik Connect...
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Verifikasi perolehan Virtual IP 172.16.1.x[cite: 1].</span>
+              <button onclick="catatSimulasi(23)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 24: VPN Kill-Switch Mechanism -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-toggle-on text-slate-800"></i> Simulasi 24: VPN Kill-Switch Mechanism[cite: 1]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">IP Leak Prevention</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Uji bahaya kebocoran IP (IP Leak) saat tunnel VPN putus mendadak dengan vs tanpa Kill-Switch[cite: 1].</p>
+
+              <!-- Dashboard Monitoring UI -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                    <span class="text-slate-500 block font-semibold">IP Publik Terdeteksi</span>
+                    <span id="sim24-ip-detected" class="font-mono font-bold text-slate-900 text-xs">202.152.1.1 (VPN Kantor)</span>
+                  </div>
+                  <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+                    <div>
+                      <span class="text-slate-500 block font-semibold">Fitur Kill-Switch</span>
+                      <span id="sim24-killswitch-status-text" class="font-bold text-rose-600">DISABLED</span>
+                    </div>
+                    <button onclick="toggleSim24KillSwitch()" id="sim24-toggle-btn" class="px-2.5 py-1 bg-slate-300 text-slate-800 font-bold rounded text-[9px]">
+                      ENABLE
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2">
+                  <button onclick="triggerSim24Drop()" class="py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-bolt mr-1"></i> [Simulasikan VPN Disconnect / Drop Tunnel]
+                  </button>
+                </div>
+
+                <div id="sim24-display-box" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono text-[10px] h-14 overflow-y-auto">
+                  [STATUS NORMAL] VPN Tunnel Aktif. Lalu lintas web sensitif aman terenkripsi.
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Bandingkan status IP LEAK vs TRAFFIC BLOCKED[cite: 1].</span>
+              <button onclick="catatSimulasi(24)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Secure Tunneling & VPN
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Catatan log eksperimen yang direkap secara otomatis dari modul laboratorium simulasi di atas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Parameter Konfigurasi / Pengujian</th>
+                <th class="px-4 py-3">Hasil / Observasi Keamanan</th>
+                <th class="px-4 py-3">Status Evaluasi VPN</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Secure Tunneling & Remote Access (VPN)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman teori dan praktikum Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+          <button id="btn-download-pdf" onclick="cetakLaporan()" class="hidden flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Cetak / Unduh PDF
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-slate-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD 06 Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil dikirim ke server guru.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+          <button onclick="cetakLaporan()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-pdf"></i> Cetak Laporan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-slate-300">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-slate-900 text-base mb-1" id="confirm-title">Konfirmasi Tindakan</h4>
+      <p class="text-xs text-slate-600 mb-5" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      <div class="flex gap-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-yes" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let waktuMulai = 0;
+    let masterDataSiswa = [];
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      masterDataSiswa = [];
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          masterDataSiswa.push({ sekolah, kelas, nama });
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.createElement('option');
+          opt.value = nama;
+          opt.textContent = nama;
+          selNama.appendChild(opt);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-800 font-medium px-3 py-1 rounded-full border border-slate-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // Question Bank: 20 Items for Modul 6 (VPN & Secure Tunneling)
+    const questionBank = [
+      { id: 1, q: "Tujuan utama pengaplikasian teknologi Virtual Private Network (VPN) saat melintasi jaringan publik adalah...", options: ["A. Meningkatkan kecepatan bandwidth fisik ISP", "B. Menyediakan lorong enkripsi aman untuk melindungi kerahasiaan & integritas data", "C. Mengganti MAC Address kartu jaringan secara permanen", "D. Menghapus kebutuhan IP Address pada router", "E. Memblokir seluruh port TCP/UDP lokal"], ans: "B" },
+      { id: 2, q: "Dampak transmisi data sensitif (misal kredensial login) tanpa VPN melalui jaringan publik (Plaintext) adalah...", options: ["A. Data otomatis dienkripsi oleh switch", "B. Data mudah dibaca dan disadap oleh aplikasi Sniffer (Data Leaked)", "C. Paket data akan ditolak oleh router tujuan", "D. Server secara otomatis mengubah password", "E. Kecepatan transfer naik dua kali lipat"], ans: "B" },
+      { id: 3, q: "Proses pembungkusan paket data asli ke dalam format paket terenkripsi sebelum dikirim melalui tunnel dinamakan...", options: ["A. Decryption", "B. Encapsulation", "C. De-encapsulation", "D. Port Forwarding", "E. Packet Loss"], ans: "B" },
+      { id: 4, q: "Protokol VPN modern yang terkenal sangat ringan, menggunakan Noise Protocol Framework, dan berjalan langsung di kernel OS adalah...", options: ["A. PPTP", "B. WireGuard", "C. L2TP/IPsec", "D. OpenVPN TCP", "E. SSTP"], ans: "B" },
+      { id: 5, q: "Dalam protokol WireGuard, otentikasi antar-peer dilakukan berbasis pada...", options: ["A. Password teks biasa", "B. Pertukaran Pasangan Kunci Kriptografi (Public/Private Key Cryptography)", "C. Captive Portal", "D. Nomor Serial Router", "E. Alamat MAC NIC"], ans: "B" },
+      { id: 6, q: "Pada konfigurasi WireGuard, fungsi dari parameter 'Allowed IPs' adalah...", options: ["A. Memblokir IP penyerang dari luar", "B. Menentukan subnet tujuan yang diizinkan melintasi tunnel VPN", "C. Menentukan kecepatan maksimal transfer file", "D. Mengganti IP Publik ISP", "E. Membatasi jumlah user WiFi"], ans: "B" },
+      { id: 7, q: "Arsitektur VPN yang digunakan untuk menghubungkan dua jaringan kantor secara permanen (misal Cabang Singkawang ke Pusat Jakarta) dinamakan...", options: ["A. Remote Access VPN", "B. Site-to-Site VPN", "C. Dial-Up VPN", "D. Client-to-Server VPN", "E. Host VPN"], ans: "B" },
+      { id: 8, q: "Arsitektur VPN yang digunakan pegawai WFH/luar kantor untuk mengakses server database internal perusahaan dinamakan...", options: ["A. Site-to-Site VPN", "B. Remote Access VPN", "C. Point-to-Point Bridge", "D. Hardware Tunnel", "E. Static Route"], ans: "B" },
+      { id: 9, q: "Tahapan negosiasi parameter keamanan dan Pre-Shared Key (PSK) pada protokol IPsec dinamakan...", options: ["A. Phase 1 ISAKMP / IKE", "B. Phase 2 L2TP AAA", "C. Encapsulation Phase", "D. Decryption Handshake", "E. Key Exchange Drop"], ans: "A" },
+      { id: 10, q: "Fungsi utama dari fitur 'VPN Kill-Switch' pada perangkat client adalah...", options: ["A. Mematikan router kantor saat terjadi serangan", "B. Memblokir seluruh traffic internet secara instan saat tunnel VPN mendadak putus untuk mencegah kebocoran IP (IP Leak)", "C. Mempercepat daya baterai laptop pegawai", "D. Menghapus akun pegawai yang tidak aktif", "E. Mematikan fitur enkripsi agar koneksi cepat"], ans: "B" },
+      { id: 11, q: "Peristiwa saat lalu lintas data kembali melintas tanpa enkripsi via IP asli ISP akibat tunnel VPN putus dinamakan...", options: ["A. Tunnel Secured", "B. IP Leak (Kebocoran IP)", "C. Handshake Established", "D. Zero Trust", "E. Encapsulation"], ans: "B" },
+      { id: 12, q: "Keunggulan OpenVPN dibanding protokol VPN lain adalah...", options: ["A. Tanpa membutuhkan enkripsi sama sekali", "B. Sangat fleksibel dan mampu melintasi NAT/Firewall ketat via port 443 TCP/UDP", "C. Memiliki jumlah baris kode paling sedikit", "D. Tidak membutuhkan software client", "E. Memerlukan IP Publik statis di kedua sisi"], ans: "B" },
+      { id: 13, q: "Ketika Remote Worker sukses terhubung via L2TP/IPsec VPN, perangkat laptop akan menerima alokasi...", options: ["A. IP Publik Statis Baru", "B. Virtual IP Privat Lokal Subnet Kantor (misal 172.16.1.105)", "C. MAC Address Server Kantor", "D. Port SSH default", "E. Domain DNS Publik"], ans: "B" },
+      { id: 14, q: "Kunci kriptografi pada WireGuard yang bersifat rahasia dan TIDAK BOLEH disebarkan ke siapapun adalah...", options: ["A. Peer Public Key", "B. Private Key", "C. Endpoint IP", "D. Allowed IPs", "E. Listen Port"], ans: "B" },
+      { id: 15, q: "Kunci kriptografi pada WireGuard yang dimasukkan ke dalam konfigurasi router lawan (Peer) dinamakan...", options: ["A. Private Key", "B. Public Key", "C. Shared Password", "D. Certificate Authority", "E. Master Secret"], ans: "B" },
+      { id: 16, q: "Protokol keamanan yang memberikan lapisan enkripsi ESP (Encapsulating Security Payload) pada L2TP adalah...", options: ["A. HTTPS", "B. IPsec", "C. OpenSSL", "D. SSH", "E. PPTP"], ans: "B" },
+      { id: 17, q: "Saat data terenkripsi VPN disadap di tengah jaringan publik, yang terlihat oleh penyadap (Sniffer) adalah...", options: ["A. Teks asli berupa Username dan Password", "B. Karakter acak tak bermakna (Ciphertext)", "C. File gambar transparan", "D. Struktur tabel database", "E. Script kode program HTML"], ans: "B" },
+      { id: 18, q: "Perbedaan utama antara Split Tunneling dan Full Tunneling pada VPN client adalah...", options: ["A. Split Tunneling membagi koneksi menjadi 2 router fisik", "B. Full Tunneling mengarahkan seluruh lalu lintas internet via VPN, sedangkan Split Tunneling hanya mengarahkan trafik tertentu ke kantor", "C. Split Tunneling tidak menggunakan enkripsi", "D. Full Tunneling hanya berfungsi pada malam hari", "E. Keduanya tidak memiliki perbedaan fungsi"], ans: "B" },
+      { id: 19, q: "Indikator utama yang menandakan tunnel WireGuard Site-to-Site telah berhasil terhubung (Established) adalah...", options: ["A. Lampu router berkedip merah", "B. Terjadi Handshake berkala (misal Latest Handshake: 1s ago) dan Uji Cross-Ping Sukses", "C. IP Publik ISP mati total", "D. CPU usage router mencapai 100%", "E. Password router terhapus"], ans: "B" },
+      { id: 20, q: "Parameter 'Endpoint IP' pada konfigurasi WireGuard diisi dengan...", options: ["A. IP Address LAN komputer lokal", "B. IP Publik Statis & Port milik Router Peer (lawan)", "C. IP Loopback 127.0.0.1", "D. Subnet Mask /24", "E. Password Admin"], ans: "B" }
+    ];
+
+    // --- SIMULASI 21: TUNNEL ENKRIPSI LOGIC ---
+    let sim21LastResult = null;
+
+    function runSim21Plaintext() {
+      const pkt = document.getElementById('sim21-packet-top');
+      const box = document.getElementById('sim21-sniffer-box');
+      const stTop = document.getElementById('sim21-status-top');
+
+      pkt.classList.remove('hidden', 'packet-animating');
+      void pkt.offsetWidth; // trigger reflow
+      pkt.classList.add('packet-animating');
+      stTop.innerText = "Transmitting...";
+      stTop.className = "text-amber-500 font-bold";
+
+      setTimeout(() => {
+        box.innerHTML = `<span class="text-rose-400 font-bold">[DATA LEAKED!] Wireshark Sniffer Intercepted:<br>Packet: UNENCRYPTED PLAINTEXT $\rightarrow$ Payload: "User: admin | Pass: Rahasia123"</span>`;
+        stTop.innerText = "DATA LEAKED (Merah)";
+        stTop.className = "text-rose-600 font-bold";
+        sim21LastResult = { type: "Internet Biasa (Plaintext)", payload: "User: admin | Pass: Rahasia123", result: "DATA LEAKED! Intercepted Plaintext", status: "UNSECURE (Risiko Penyadapan)" };
+        showToast("Penyadapan Terjadi!", "Data plaintext berhasil dibaca Sniffer di jalur publik.", "warning");
+      }, 1250);
+    }
+
+    function runSim21VPN() {
+      const pkt = document.getElementById('sim21-packet-bottom');
+      const box = document.getElementById('sim21-sniffer-box');
+      const stBot = document.getElementById('sim21-status-bottom');
+
+      pkt.classList.remove('hidden', 'packet-animating');
+      void pkt.offsetWidth; // trigger reflow
+      pkt.classList.add('packet-animating');
+      stBot.innerText = "Encapsulating & Encrypting...";
+      stBot.className = "text-amber-500 font-bold";
+
+      setTimeout(() => {
+        box.innerHTML = `<span class="text-emerald-400 font-bold">[DATA SECURED!] Wireshark Sniffer Intercepted:<br>Packet: ESP VPN Encapsulated $\rightarrow$ Payload: "e8a9f01b3c84d7e19f..." (Garbage Ciphertext)</span>`;
+        stBot.innerText = "DATA SECURED (Hijau)";
+        stBot.className = "text-emerald-600 font-bold";
+        sim21LastResult = { type: "VPN Tunnel (Encrypted)", payload: "Encrypted Ciphertext (e8a9f0...)", result: "DATA SECURED! Sniffer Read Garbage Data", status: "SECURE (Terenkripsi)" };
+        showToast("Data Aman!", "Sniffer hanya membaca ciphertext acak tak bermakna.", "success");
+      }, 1250);
+    }
+
+
+    // --- SIMULASI 22: SITE-TO-SITE WIREGUARD LOGIC ---
+    let sim22Keys = { pubSkw: "", privSkw: "", pubJkt: "", privJkt: "" };
+    let sim22TunnelReady = false;
+    let sim22LastResult = null;
+
+    function generateSim22Keys() {
+      sim22Keys.pubSkw = "wg_skw_pub_" + Math.random().toString(36).substring(2, 10) + "=";
+      sim22Keys.privSkw = "wg_skw_priv_" + Math.random().toString(36).substring(2, 10) + "=";
+      sim22Keys.pubJkt = "wg_jkt_pub_" + Math.random().toString(36).substring(2, 10) + "=";
+      sim22Keys.privJkt = "wg_jkt_priv_" + Math.random().toString(36).substring(2, 10) + "=";
+
+      document.getElementById('sim22-pub-skw').value = sim22Keys.pubSkw;
+      document.getElementById('sim22-pub-jkt').value = sim22Keys.pubJkt;
+
+      // Auto Fill Peer Key for smooth student interaction
+      document.getElementById('sim22-peer-skw').value = sim22Keys.pubJkt;
+      document.getElementById('sim22-peer-jkt').value = sim22Keys.pubSkw;
+
+      document.getElementById('sim22-status-box').innerHTML = `<span class="text-amber-400">[KEYPAIR GENERATED] Keypair Singkawang & Jakarta berhasil dibuat. Peer Keys terisi.</span>`;
+      showToast("Keypair Created", "Public Key & Private Key berhasil dibuat.", "info");
+    }
+
+    function initiateSim22Tunnel() {
+      const peerSkw = document.getElementById('sim22-peer-skw').value.trim();
+      const peerJkt = document.getElementById('sim22-peer-jkt').value.trim();
+      const allowSkw = document.getElementById('sim22-allow-skw').value.trim();
+      const allowJkt = document.getElementById('sim22-allow-jkt').value.trim();
+      const box = document.getElementById('sim22-status-box');
+
+      if (!peerSkw || !peerJkt) {
+        showToast("Error Pairing", "Harap Generate Keypair dan pastikan Peer Keys terisi!", "warning");
+        return;
+      }
+
+      if (allowSkw === "192.168.20.0/24" && allowJkt === "192.168.10.0/24") {
+        sim22TunnelReady = true;
+        box.innerHTML = `<span class="text-emerald-400">[TUNNEL ESTABLISHED] Handshake Verified! WireGuard Site-to-Site Active (Latest Handshake: 1s ago).</span>`;
+        sim22LastResult = { param: "Site-to-Site SKW-JKT", allowedIPs: "SKW:192.168.20.0/24 | JKT:192.168.10.0/24", res: "Tunnel Established (Handshake 1s ago)", eval: "PASS (Established)" };
+        showToast("Tunnel Connected", "Jalur Site-to-Site WireGuard sukses terhubung!", "success");
+      } else {
+        box.innerHTML = `<span class="text-rose-400">[ROUTING ERROR] Allowed IPs harus menunjuk ke subnet lawan (SKW: 192.168.20.0/24 & JKT: 192.168.10.0/24)!</span>`;
+      }
+    }
+
+    function testSim22CrossPing() {
+      const box = document.getElementById('sim22-status-box');
+      if (!sim22TunnelReady) {
+        showToast("Tunnel Belum Aktif", "Jalankan Initiate Tunnel terlebih dahulu!", "warning");
+        return;
+      }
+      box.innerHTML = `<span class="text-emerald-400">[CROSS-PING SUCCESS] Ping 192.168.10.5 (PC SKW) $\rightarrow$ 192.168.20.10 (Server JKT): Reply 2ms (Encrypted via WG Tunnel).</span>`;
+      showToast("Cross-Ping Sukses", "Komunikasi antar-cabang transparan & lancar!", "success");
+    }
+
+
+    // --- SIMULASI 23: REMOTE WORKER L2TP/IPSEC LOGIC ---
+    let sim23Connected = false;
+    let sim23LastResult = null;
+
+    function connectSim23L2TP() {
+      const srv = document.getElementById('sim23-server').value.trim();
+      const psk = document.getElementById('sim23-psk').value.trim();
+      const usr = document.getElementById('sim23-user').value.trim();
+      const pass = document.getElementById('sim23-pass').value.trim();
+      const box = document.getElementById('sim23-result-box');
+
+      if (srv === "202.152.1.1" && psk === "SangatRahasia2026" && usr === "staf_lapangan" && pass === "pass123") {
+        sim23Connected = true;
+        box.innerHTML = `<span class="text-emerald-400">[CONNECTED] Phase 1 IPsec PSK Negotiated $\rightarrow$ Phase 2 L2TP AAA Authenticated.<br>Virtual IP Allocated: 172.16.1.105 (Subnet Kantor)</span>`;
+        sim23LastResult = { user: usr, target: srv, virtIP: "172.16.1.105", res: "L2TP/IPsec Connected", eval: "AUTHENTICATED" };
+        showToast("Dial-Up Berhasil", "Laptop mendapat Virtual IP Privat 172.16.1.105", "success");
+      } else {
+        box.innerHTML = `<span class="text-rose-400">[AUTHENTICATION FAILED] Pre-Shared Key atau Username/Password salah! Access Denied.</span>`;
+        showToast("Otentikasi Gagal", "Periksa kembali PSK dan kredensial login!", "warning");
+      }
+    }
+
+    function testSim23DBAccess() {
+      const box = document.getElementById('sim23-result-box');
+      if (!sim23Connected) {
+        box.innerHTML = `<span class="text-rose-400">[ACCESS DENIED] Server Database 172.16.1.10 memblokir koneksi dari IP Publik ISP 36.80.12.99! Hubungkan VPN dahulu.</span>`;
+        showToast("Akses Ditolak", "Server internal tidak dapat diakses langsung via Internet publik.", "warning");
+        return;
+      }
+      box.innerHTML = `<span class="text-emerald-400">[ACCESS GRANTED] Query Database 172.16.1.10 via Virtual IP 172.16.1.105 Sukses! Data Terhubung.</span>`;
+      showToast("Akses DB Berhasil", "Pegawai WFH dapat mengelola server database kantor.", "success");
+    }
+
+
+    // --- SIMULASI 24: VPN KILL-SWITCH LOGIC ---
+    let sim24KillSwitchEnabled = false;
+    let sim24LastResult = null;
+
+    function toggleSim24KillSwitch() {
+      sim24KillSwitchEnabled = !sim24KillSwitchEnabled;
+      const txt = document.getElementById('sim24-killswitch-status-text');
+      const btn = document.getElementById('sim24-toggle-btn');
+
+      if (sim24KillSwitchEnabled) {
+        txt.innerText = "ENABLED";
+        txt.className = "font-bold text-emerald-600";
+        btn.innerText = "DISABLE";
+        btn.className = "px-2.5 py-1 bg-slate-900 text-white font-bold rounded text-[9px]";
+        showToast("Kill-Switch Enabled", "Perlindungan IP Leak aktif.", "info");
+      } else {
+        txt.innerText = "DISABLED";
+        txt.className = "font-bold text-rose-600";
+        btn.innerText = "ENABLE";
+        btn.className = "px-2.5 py-1 bg-slate-300 text-slate-800 font-bold rounded text-[9px]";
+        showToast("Kill-Switch Disabled", "Peringatan: Risiko kebocoran IP saat VPN drop.", "warning");
+      }
+    }
+
+    function triggerSim24Drop() {
+      const ipText = document.getElementById('sim24-ip-detected');
+      const box = document.getElementById('sim24-display-box');
+
+      if (sim24KillSwitchEnabled) {
+        ipText.innerText = "NONE (Traffic Blocked)";
+        ipText.className = "font-mono font-bold text-slate-400 text-xs";
+        box.innerHTML = `<span class="text-emerald-400 font-bold">[TUNNEL DISCONNECTED] Kill-Switch Active: Network Interface Instantly Blocked (0 KB/s).<br>RESULT: TRAFFIC BLOCKED / IP LEAK PREVENTED (Aman)</span>`;
+        sim24LastResult = { mode: "Kill-Switch ENABLED", event: "VPN Drop", ipSeen: "BLOCKED (0 KB/s)", res: "TRAFFIC BLOCKED / LEAK PREVENTED", eval: "SECURE (Protected)" };
+        showToast("Traffic Blocked", "Kill-Switch menghentikan lalu lintas ISP asli untuk cegah IP Leak.", "success");
+      } else {
+        ipText.innerText = "36.80.12.99 (IP Asli ISP)";
+        ipText.className = "font-mono font-bold text-rose-600 text-xs";
+        box.innerHTML = `<span class="text-rose-400 font-bold">[TUNNEL DISCONNECTED] Kill-Switch Inactive: OS Reverted Traffic to Native ISP Interface.<br>RESULT: IP LEAK DETECTED! Detected IP = 36.80.12.99 (Sangat Berbahaya)</span>`;
+        sim24LastResult = { mode: "Kill-Switch DISABLED", event: "VPN Drop", ipSeen: "36.80.12.99 (IP Asli ISP)", res: "IP LEAK DETECTED!", eval: "DANGER (Unsecure)" };
+        showToast("IP LEAK!", "IP Asli ISP tereskpos ke publik saat VPN terputus!", "warning");
+      }
+    }
+
+
+    // RECORD SIMULATION LOGS TO TABLE
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 21) {
+        if (!sim21LastResult) {
+          showToast("Perhatian", "Jalankan pengujian pengiriman data pada Simulasi 21 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 21: Encrypted VPN Tunnel",
+          param: `Mode Transmisi: ${sim21LastResult.type}`,
+          hasil: `${sim21LastResult.payload} $\rightarrow$ ${sim21LastResult.result}`,
+          status: sim21LastResult.status
+        };
+      } else if (simNum === 22) {
+        if (!sim22LastResult) {
+          showToast("Perhatian", "Jalankan pengujian Initiate Tunnel pada Simulasi 22 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 22: Site-to-Site WireGuard",
+          param: sim22LastResult.allowedIPs,
+          hasil: sim22LastResult.res,
+          status: sim22LastResult.eval
+        };
+      } else if (simNum === 23) {
+        if (!sim23LastResult) {
+          showToast("Perhatian", "Jalankan pengujian Dial-Up pada Simulasi 23 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 23: Remote Worker (L2TP/IPsec)",
+          param: `User: ${sim23LastResult.user} $\rightarrow$ Target: ${sim23LastResult.target}`,
+          hasil: `Assigned IP: ${sim23LastResult.virtIP} | DB Access Granted`,
+          status: sim23LastResult.eval
+        };
+      } else if (simNum === 24) {
+        if (!sim24LastResult) {
+          showToast("Perhatian", "Jalankan simulasi VPN Disconnect pada Simulasi 24 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 24: VPN Kill-Switch Mechanism",
+          param: `Mode: ${sim24LastResult.mode} | Event: ${sim24LastResult.event}`,
+          hasil: `Visible IP: ${sim24LastResult.ipSeen} $\rightarrow$ ${sim24LastResult.res}`,
+          status: sim24LastResult.eval
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum VPN berhasil disimpan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
+        if (row.status.includes("UNSECURE") || row.status.includes("DANGER") || row.status.includes("LEAK")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+        if (row.status.includes("SECURE") || row.status.includes("PASS") || row.status.includes("AUTHENTICATED")) badgeColor = "bg-emerald-50 text-emerald-800 border border-emerald-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Parameter Konfigurasi,Hasil Pengukuran,Status Evaluasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "VPN_Secure_Tunneling_LKPD06_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBank.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-slate-900">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let skorBenar = 0;
+      questionBank.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden', 'bg-slate-100', 'text-slate-800');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-slate-800 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-800 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBank.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+      const pilihanLkpdTerpilih = "LKPD 06: Secure Tunneling & Remote Access (VPN)";
+
+      const payload = {
+        sekolah: sekolah,
+        nama_lengkap: nama,
+        pilihan_lkpd: pilihanLkpdTerpilih,
+        kelas: kelas,
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir,
+        tabelPengamatan: tableData
+      };
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep VPN Enkripsi, WireGuard Site-to-Site, L2TP Remote Access, dan mekanisme Kill-Switch.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali perbedaan Site-to-Site vs Remote Access serta pertukaran Public Key.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi enkripsi tunnel dan bahaya kebocoran IP (IP Leak).";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      const statusKirimEl = document.getElementById('status-kirim-gas');
+      statusKirimEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-slate-600"></i> Mengirim data ke server guru...`;
+      document.getElementById('modal-result').classList.remove('hidden');
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil terkirim ke spreadsheet guru!`;
+      } catch (err) {
+        console.error("Gagal mengirim data via fetch:", err);
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-600"></i> Gagal otomatis via Fetch (Offline).`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function cetakLaporan() {
+      closeModal();
+      window.print();
+    }
+
+    function resetFormPrompt() {
+      showConfirm("Reset LKPD", "Apakah Anda yakin ingin meriset seluruh isian dan data praktikum LKPD 06 ini?", () => {
+        document.getElementById('sel-sekolah').value = "";
+        updateDropdownKelas();
+        tableData = [];
+        waktuMulai = 0;
+        renderTabelPengamatan();
+        document.getElementById('form-quiz').reset();
+        questionBank.forEach(q => {
+          const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+        });
+        document.getElementById('btn-download-pdf').classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("Reset Selesai", "Formulir telah dikembalikan ke kondisi awal.", "info");
+      });
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = "bg-slate-900 text-white border-slate-700";
+      let icon = "fa-circle-info text-slate-300";
+
+      toast.className = `p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-xs min-w-[260px] max-w-xs transition transform translate-y-2 opacity-0 pointer-events-auto ${bg}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <p class="font-bold mb-0.5">${title}</p>
+          <p class="text-slate-300 leading-tight">${message}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      modal.classList.remove('hidden');
+
+      const btnYes = document.getElementById('btn-confirm-yes');
+      const btnCancel = document.getElementById('btn-confirm-cancel');
+
+      const handleYes = () => { cleanup(); onConfirm(); };
+      const handleCancel = () => { cleanup(); };
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', handleYes);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnYes.addEventListener('click', handleYes);
+      btnCancel.addEventListener('click', handleCancel);
+    }
+
+    window.onload = function () {
+      initDatabaseSiswa();
+      renderQuiz();
+    };
+  </script>
+</body>
+</html>

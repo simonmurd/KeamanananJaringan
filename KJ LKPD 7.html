@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 07: System Hardening & Monitoring Jaringan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    /* Syslog & Terminal Auto-Scroll Simulation */
+    .terminal-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: #475569 #0f172a;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-300">
+          <i class="fa-solid fa-shield-cat text-2xl text-slate-800"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 07: System Hardening & Monitoring Jaringan</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Least Privilege, SSH/HTTPS Hardening, Wireshark Sniffing, Syslog Analytics & Snort NIDS Rules</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Harap pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan laboratorium simulasi System Hardening & Monitoring Jaringan.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori System Hardening & Monitoring -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: System Hardening & Monitoring Jaringan
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Defense in Depth Architecture</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>System Hardening</strong> adalah proses memperkuat keamanan sistem operasi dan layanan dengan meminimalkan permukaan serangan (Attack Surface), menerapkan prinsip <em>Least Privilege</em>, dan mematikan servis tak terpakai. Berdampingan dengan hardening, <strong>Network Monitoring & IDS</strong> berfungsi mendeteksi anomali trafik serta ancaman secara real-time.
+        </p>
+
+        <!-- Dynamic Comparison Table Hardening & Monitoring Pillars -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-list-check text-slate-700 mr-1.5"></i> Pilar Utama Hardening dan Pemantauan Jaringan</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Domain Keamanan</th>
+                  <th class="p-2.5 border-b border-slate-200">Teknik / Vektor Pengamanan</th>
+                  <th class="p-2.5 border-b border-slate-200">Risiko Tanpa Hardening</th>
+                  <th class="p-2.5 border-b border-slate-200">Hasil Akhir yang Diharapkan</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">SSH Service Hardening</td>
+                  <td class="p-2.5">Custom Port, Disable Root Login, Force SSH Key Pairs</td>
+                  <td class="p-2.5 text-rose-700 font-medium">Automated Bot Brute Force & Kompromi Superuser</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Akses remote terisolasi & terenkripsi kuat</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Protocol Encryption (HTTPS)</td>
+                  <td class="p-2.5">TLSv1.3 Certificates, Disabling Plaintext HTTP Form</td>
+                  <td class="p-2.5 text-rose-700 font-medium">Credential & Session Hijacking via Packet Sniffing</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Kerahasiaan payload data sensitif terjamin</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Centralized Syslog Analytics</td>
+                  <td class="p-2.5">Aggregasi Log (`/var/log/auth.log`), Threshold Spike Alerting</td>
+                  <td class="p-2.5 text-rose-700 font-medium">Serangan tidak terdeteksi (Blind spot incident)</td>
+                  <td class="p-2.5 font-semibold text-slate-800">Visibilitas penuh jejak aktivitas sistem & IP penyerang</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">NIDS (Snort Rules)</td>
+                  <td class="p-2.5">Signature-based Detection, Rate Filtering (`detection_filter`)</td>
+                  <td class="p-2.5 text-rose-700 font-medium">Layanan tumbuh akibat DoS / Malicious Scan</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Peringatan dini (Alert) & blokir otomatis</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-shield text-slate-700"></i> Prinsip Least Privilege
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              Prinsip keamanan informasi yang mewajibkan setiap pengguna, proses, atau sistem hanya diberikan hak akses minimum yang benar-benar dibutuhkan untuk menjalankan tugasnya. Contoh: Melarang login langsung akun `root` via SSH.
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-bell text-slate-700"></i> NIDS vs NIPS
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              <strong>NIDS</strong> (Intrusion Detection System) bekerja secara pasif memantau salinan trafik dan memberikan peringatan (Alert). Sedangkan <strong>NIPS</strong> (Intrusion Prevention System) terpasang *inline* untuk memblokir paket berbahaya secara langsung.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi System Hardening & Monitoring
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Simulasi SSH Port Switching, Packet Sniffer Visualizer, Syslog Analytics & Snort NIDS Rule Builder.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Studio Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 25: SSH Hardening & Port Switching -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-terminal text-slate-800"></i> Simulasi 25: SSH Hardening & Port Switching
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">sshd_config</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Sunting berkas konfigurasi `/etc/ssh/sshd_config` untuk memitigasi serangan Brute Force pada Server Linux.</p>
+
+              <!-- Editor Konfigurasi & Status Audit -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="bg-slate-900 text-slate-200 p-3 rounded-lg font-mono-code text-[11px] space-y-2">
+                  <div class="text-slate-400 border-b border-slate-700 pb-1 flex justify-between">
+                    <span>FILE: /etc/ssh/sshd_config</span>
+                    <span id="sim25-score-badge" class="text-rose-400 font-bold">Hardening Score: 0/100</span>
+                  </div>
+                  
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">Port</span>
+                    <select id="sim25-port" onchange="auditSim25SSH()" class="bg-slate-800 text-amber-300 border border-slate-600 rounded px-2 py-0.5 text-[10px] outline-none font-bold">
+                      <option value="22">22 (Default - Rentan Bot)</option>
+                      <option value="2244">2244 (Custom Secure Port)</option>
+                    </select>
+                  </div>
+
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">PermitRootLogin</span>
+                    <select id="sim25-root" onchange="auditSim25SSH()" class="bg-slate-800 text-amber-300 border border-slate-600 rounded px-2 py-0.5 text-[10px] outline-none font-bold">
+                      <option value="yes">yes (Superuser Rentan)</option>
+                      <option value="no">no (Disable Direct Root)</option>
+                    </select>
+                  </div>
+
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">PasswordAuthentication</span>
+                    <select id="sim25-passauth" onchange="auditSim25SSH()" class="bg-slate-800 text-amber-300 border border-slate-600 rounded px-2 py-0.5 text-[10px] outline-none font-bold">
+                      <option value="yes">yes (Rentan Tebak Password)</option>
+                      <option value="no">no (Mewajibkan SSH Key Pair)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- CLI Test Area -->
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <button onclick="testSim25SSH('root22')" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-mono rounded-lg transition text-left px-2">
+                    $ ssh root@192.168.1.10 -p 22
+                  </button>
+                  <button onclick="testSim25SSH('user2244')" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-mono rounded-lg transition text-left px-2">
+                    $ ssh -i id_rsa user1@192.168.1.10 -p 2244
+                  </button>
+                </div>
+
+                <div id="sim25-terminal-out" class="p-2.5 bg-slate-900 text-white rounded-lg font-mono-code text-[10px] h-14 overflow-y-auto">
+                  [SYSTEM READY] Sesuaikan sshd_config lalu klik perintah pengujian remote di atas...
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Target Score: 100/100 (Secure Hardened).</span>
+              <button onclick="catatSimulasi(25)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 26: Wireshark Packet Sniffer Visualizer -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-network-wired text-slate-800"></i> Simulasi 26: Wireshark Packet Sniffer Visualizer
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">OSI Layer 7</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Analisis risiko keterbacaan kredensial sensitif pada lalu lintas tidak terenkripsi (HTTP) vs terenkripsi (HTTPS).</p>
+
+              <!-- Wireshark UI Component -->
+              <div class="border border-slate-200 rounded-xl p-2.5 bg-slate-50 mb-3 text-xs space-y-2">
+                <!-- Filter Bar -->
+                <div class="flex gap-2 items-center">
+                  <span class="font-bold text-[10px] text-slate-500">Filter:</span>
+                  <input type="text" id="sim26-filter" value='http.request.method == "POST"' class="flex-1 border border-slate-300 rounded px-2 py-1 font-mono-code text-[10px] bg-white">
+                  <button onclick="applySim26Filter()" class="bg-slate-800 text-white px-2.5 py-1 rounded text-[10px] font-bold hover:bg-slate-700">Apply</button>
+                </div>
+
+                <!-- Panel 1: Packet List -->
+                <div class="border border-slate-200 rounded bg-white overflow-hidden text-[10px]">
+                  <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 font-bold text-slate-700 border-b border-slate-200">
+                      <tr>
+                        <th class="p-1 text-center">No</th>
+                        <th class="p-1">Source</th>
+                        <th class="p-1">Destination</th>
+                        <th class="p-1">Protocol</th>
+                        <th class="p-1">Info</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sim26-packet-rows">
+                      <tr onclick="selectSim26Packet('http')" id="row-pkt-http" class="cursor-pointer hover:bg-rose-50 bg-rose-50/60 transition">
+                        <td class="p-1 text-center font-bold text-slate-500">102</td>
+                        <td class="p-1 font-mono">192.168.1.5</td>
+                        <td class="p-1 font-mono">192.168.1.10</td>
+                        <td class="p-1 font-bold text-rose-700">HTTP</td>
+                        <td class="p-1 truncate font-mono">POST /login.php HTTP/1.1</td>
+                      </tr>
+                      <tr onclick="selectSim26Packet('https')" id="row-pkt-https" class="cursor-pointer hover:bg-emerald-50 transition">
+                        <td class="p-1 text-center font-bold text-slate-500">105</td>
+                        <td class="p-1 font-mono">192.168.1.5</td>
+                        <td class="p-1 font-mono">192.168.1.10</td>
+                        <td class="p-1 font-bold text-emerald-700">TLSv1.3</td>
+                        <td class="p-1 truncate font-mono">Application Data (Encrypted)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Panel 2 & 3: Follow TCP Stream Payload Output -->
+                <div class="space-y-1">
+                  <div class="flex justify-between items-center text-[10px]">
+                    <span class="font-bold text-slate-700">Payload Inspector (Follow TCP Stream):</span>
+                    <span id="sim26-risk-tag" class="font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded">CRITICAL PLAINTEXT</span>
+                  </div>
+                  <div id="sim26-stream-box" class="p-2 bg-slate-900 text-rose-300 font-mono-code text-[10px] rounded h-20 overflow-y-auto leading-relaxed">
+                    POST /login.php HTTP/1.1<br>
+                    Host: sekolah.sch.id<br>
+                    Content-Type: application/x-www-form-urlencoded<br><br>
+                    <span class="bg-rose-950 text-rose-200 font-bold px-1">username=admin_sekolah&password=RahasiaNegara123</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Klik baris HTTP vs TLSv1.3 untuk membandingkan payload.</span>
+              <button onclick="catatSimulasi(26)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 27: Centralized Syslog & Traffic Monitor -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-chart-line text-slate-800"></i> Simulasi 27: Centralized Syslog & Traffic Monitor
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">SOC Dashboard</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Deteksi lonjakan anomali gagal login (SSH Brute Force) dari IP penyerang eksternal secara real-time.</p>
+
+              <!-- SOC Dashboard Container -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  
+                  <!-- Traffic Graph SVG -->
+                  <div class="bg-slate-50 p-2 border border-slate-200 rounded-lg space-y-1">
+                    <div class="flex justify-between text-[10px] font-bold">
+                      <span>Login Attempt Spike</span>
+                      <span id="sim27-rate" class="text-rose-600">1,200 req/min (SPIKE)</span>
+                    </div>
+                    <div class="h-16 w-full flex items-end bg-white border border-slate-200 rounded p-1">
+                      <svg class="w-full h-full overflow-visible" viewBox="0 0 100 40">
+                        <path id="sim27-graph-path" d="M0,35 L20,34 L40,35 L50,5 L60,4 L70,35 L100,35" fill="none" stroke="#e11d48" stroke-width="2.5" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Syslog Live Stream Panel -->
+                  <div class="bg-slate-900 text-slate-200 p-2 rounded-lg font-mono-code text-[9px] h-24 overflow-y-auto terminal-scroll" id="sim27-syslog-stream">
+                    <div class="text-rose-400">[auth.log] Failed password for invalid user admin from 103.45.12.8 port 41022 ssh2</div>
+                    <div class="text-rose-400">[auth.log] Failed password for invalid user root from 103.45.12.8 port 41023 ssh2</div>
+                    <div class="text-rose-400">[auth.log] Failed password for invalid user user from 103.45.12.8 port 41024 ssh2</div>
+                  </div>
+                </div>
+
+                <!-- Top Attacker IP Table -->
+                <div class="border border-slate-200 rounded overflow-hidden text-[10px]">
+                  <table class="w-full text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-700">
+                      <tr>
+                        <th class="p-1.5">Attacker IP</th>
+                        <th class="p-1.5">Attack Type</th>
+                        <th class="p-1.5">Attempt Count</th>
+                        <th class="p-1.5 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                      <tr class="border-t border-slate-100">
+                        <td class="p-1.5 font-mono font-bold text-rose-700">103.45.12.8</td>
+                        <td class="p-1.5">SSH Brute Force</td>
+                        <td class="p-1.5 font-mono font-bold">1,200 / min</td>
+                        <td class="p-1.5 text-center">
+                          <button id="btn-sim27-block" onclick="blockSim27IP()" class="px-2 py-0.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded text-[9px] transition">
+                            <i class="fa-solid fa-ban mr-0.5"></i> Block IP
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Eksekusi penangkalan dengan memblokir IP penyerang.</span>
+              <button onclick="catatSimulasi(27)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 28: NIDS Rule Builder (Snort Simulator) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-shield-virus text-slate-800"></i> Simulasi 28: NIDS Rule Builder (Snort Simulator)
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">snort.conf</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Susun Rule Snort IDS untuk mendeteksi indikasi serangan DoS / HTTP Flood ke Web Server sekolah.</p>
+
+              <!-- Snort Rule Constructor Interface -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="p-2.5 bg-slate-900 rounded-lg text-white font-mono-code text-[10px] space-y-2">
+                  <span class="text-slate-400 block border-b border-slate-700 pb-1">SNORT RULE CONSTRUCTOR:</span>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[9px]">
+                    <div>
+                      <span class="text-slate-400 block">Action</span>
+                      <select id="sim28-action" class="w-full bg-slate-800 text-amber-300 rounded p-1 font-bold">
+                        <option value="alert">alert</option>
+                        <option value="log">log</option>
+                      </select>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block">Protocol</span>
+                      <select id="sim28-proto" class="w-full bg-slate-800 text-amber-300 rounded p-1 font-bold">
+                        <option value="tcp">tcp</option>
+                        <option value="icmp">icmp</option>
+                      </select>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block">Target Dst IP/Port</span>
+                      <input type="text" id="sim28-dst" value="192.168.1.1 80" class="w-full bg-slate-800 text-amber-300 rounded p-1 font-mono">
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[9px]">Rule Options (msg & detection_filter):</span>
+                    <input type="text" id="sim28-options" value='(msg:"Possible HTTP Flood Attack Detected"; detection_filter:track by_src, count 50, seconds 5; sid:1000001;)' class="w-full bg-slate-800 text-emerald-300 rounded p-1 font-mono text-[9px]">
+                  </div>
+                </div>
+
+                <!-- Traffic Generator Buttons -->
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <button onclick="triggerSim28Attack('http_flood')" class="py-1.5 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-lg transition">
+                    <i class="fa-solid fa-bolt mr-1"></i> Simulasikan HTTP Flood
+                  </button>
+                  <button onclick="triggerSim28Attack('normal_traffic')" class="py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg transition">
+                    <i class="fa-solid fa-globe mr-1"></i> Simulasikan Normal Traffic
+                  </button>
+                </div>
+
+                <div id="sim28-alert-console" class="p-2.5 bg-slate-900 text-emerald-400 rounded-lg font-mono-code text-[10px] h-14 overflow-y-auto">
+                  [SNORT IDS ACTIVE] Siap memantau lalu lintas jaringan...
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji pencetus alarm dengan mensimulasikan trafik.</span>
+              <button onclick="catatSimulasi(28)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum System Hardening & Monitoring
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Catatan log eksperimen yang direkap secara otomatis dari modul laboratorium simulasi di atas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Parameter Konfigurasi / Pengujian</th>
+                <th class="px-4 py-3">Hasil / Observasi Keamanan</th>
+                <th class="px-4 py-3">Status Evaluasi Keamanan</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi System Hardening & Monitoring Jaringan
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman teori dan praktikum Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+          <button id="btn-download-pdf" onclick="cetakLaporan()" class="hidden flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Cetak / Unduh PDF
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-slate-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD 07 Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil dikirim ke server guru.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+          <button onclick="cetakLaporan()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-pdf"></i> Cetak Laporan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-slate-300">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-slate-900 text-base mb-1" id="confirm-title">Konfirmasi Tindakan</h4>
+      <p class="text-xs text-slate-600 mb-5" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      <div class="flex gap-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-yes" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let waktuMulai = 0;
+    let masterDataSiswa = [];
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      masterDataSiswa = [];
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          masterDataSiswa.push({ sekolah, kelas, nama });
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.createElement('option');
+          opt.value = nama;
+          opt.textContent = nama;
+          selNama.appendChild(opt);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-800 font-medium px-3 py-1 rounded-full border border-slate-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // Question Bank: 20 Items for Modul 7 (System Hardening & Monitoring)
+    const questionBank = [
+      { id: 1, q: "Tujuan utama pengaplikasian prinsip 'Least Privilege' pada administrasi sistem Linux adalah...", options: ["A. Memberikan hak akses root penuh kepada seluruh staf IT", "B. Membatasi hak akses pengguna hanya pada tingkat minimum yang diperlukan untuk tugasnya", "C. Mematikan seluruh akun pengguna non-admin", "D. Menghapus kebutuhan kata sandi pada server", "E. Mengabaikan pembatasan direktori file"], ans: "B" },
+      { id: 2, q: "Port default SSH (22) sangat rentan terhadap serangan Automated Bot Scanning. Tindakan mitigasi awal yang paling efisien adalah...", options: ["A. Mengganti port SSH ke Custom Port (Port Switching, misal 2244)", "B. Mematikan service SSH secara permanen", "C. Membuka port 80 untuk akses remote", "D. Menghapus file /etc/ssh/sshd_config", "E. Menggunakan protokol Telnet"], ans: "A" },
+      { id: 3, q: "Dalam berkas /etc/ssh/sshd_config, konfigurasi untuk melarang akun superuser login langsung via SSH adalah...", options: ["A. PermitRootLogin yes", "B. PermitRootLogin no", "C. RootAccess Enable", "D. AllowUsers root", "E. PasswordAuthentication yes"], ans: "B" },
+      { id: 4, q: "Untuk mewajibkan autentikasi SSH berbasis Key Pairs dan menolak tebakan kata sandi, parameter yang diubah adalah...", options: ["A. PasswordAuthentication no", "B. PasswordAuthentication yes", "C. PubkeyAuthentication disable", "D. Port 22", "E. PermitRootLogin yes"], ans: "A" },
+      { id: 5, q: "Saat menyadap lalu lintas login HTTP menggunakan Wireshark, bahaya utama yang ditemukan pada payload data adalah...", options: ["A. Kredensial terlihat jelas berupa Plaintext tanpa enkripsi", "B. Kredensial otomatis terenkripsi TLS 1.3", "C. File login rusak dan tidak terbaca", "D. IP server tersembunyi", "E. Username teracak menjadi ciphertext"], ans: "A" },
+      { id: 6, q: "Filter Wireshark yang digunakan khusus untuk menyaring paket data pengiriman formulir web HTTP POST adalah...", options: ["A. ip.addr == 192.168.1.1", "B. http.request.method == \"POST\"", "C. tcp.port == 443", "D. dns.flags.response", "E. icmp.type == 8"], ans: "B" },
+      { id: 7, q: "Fitur pada Wireshark yang berfungsi merekonstruksi seluruh alur percakapan TCP/HTTP hingga menampilkan payload utuh dinamakan...", options: ["A. Follow TCP Stream", "B. Packet Colorization", "C. Capture Interfaces", "D. Resolve IP Address", "E. Export Dissections"], ans: "A" },
+      { id: 8, q: "Perbedaan utama antara protokol HTTP dan HTTPS dalam konteks transmisi data sensitif adalah...", options: ["A. HTTP menggunakan port 443 dan terenkripsi TLS", "B. HTTPS menggunakan enkripsi SSL/TLS sehingga payload tidak dapat dibaca sniffer", "C. HTTP lebih cepat karena mengacak data", "D. HTTPS tidak memerlukan SSL certificate", "E. HTTP aman dari penyadapan Wireshark"], ans: "B" },
+      { id: 9, q: "Berkas log pada sistem operasi Linux Ubuntu/Debian yang mencatat riwayat percobaaan autentikasi SSH dan login user adalah...", options: ["A. /var/log/syslog", "B. /var/log/auth.log", "C. /var/log/nginx/access.log", "D. /var/log/dpkg.log", "E. /var/log/boot.log"], ans: "B" },
+      { id: 10, q: "Indikasi serangan SSH Brute Force pada pemantauan log terpusat (Syslog) ditandai dengan...", options: ["A. Pesan 'Accepted password' dari IP internal secara berkala", "B. Lonjakan drastis entri 'Failed password for invalid user' dari satu IP eksternal", "C. Penurunan trafik data server menjadi 0 KB/s", "D. Perubahan IP public secara otomatis", "E. Berkas log terhapus secara otomatis"], ans: "B" },
+      { id: 11, q: "Tindakan mitigasi awal saat mendeteksi IP penyerang Brute Force pada tabel top attacker Syslog adalah...", options: ["A. Mematikan daya listrik server", "B. Memblokir IP penyerang pada Firewall (IP Blacklisting / iptables drop)", "C. Mengganti nama domain server", "D. Menambah pengguna baru", "E. Mengabaikan entri log"], ans: "B" },
+      { id: 12, q: "Komponen dasar dari arsitektur aturan (Rule) Snort NIDS terdiri dari dua bagian utama, yaitu...", options: ["A. Header dan Options", "B. Title dan Body", "C. Request dan Response", "D. Public dan Private", "E. Input dan Output"], ans: "A" },
+      { id: 13, q: "Pada Rule Snort: `alert tcp any any -> 192.168.1.1 80`, bagian `alert tcp` dinamakan...", options: ["A. Rule Option", "B. Rule Action & Protocol", "C. Direction Operator", "D. Destination Port", "E. Signature ID"], ans: "B" },
+      { id: 14, q: "Opsi Snort Rule `detection_filter: track by_src, count 50, seconds 5` berfungsi untuk...", options: ["A. Memblokir seluruh port HTTP", "B. Memicu alarm hanya jika terjadi lebih dari 50 permintaan dalam 5 detik dari IP sumber yang sama (Flood Detection)", "C. Menghapus log Snort setiap 5 detik", "D. Mengubah IP target menjadi loopback", "E. Mengirim email ke administrator setiap jam"], ans: "B" },
+      { id: 15, q: "Berapakah rentang Signature ID (SID) yang direkomendasikan untuk pembuatan Snort Rules buatan lokal/kustom?", options: ["A. SID < 100", "B. SID 100 - 999", "C. SID >= 1000001", "D. SID 0", "E. SID negatif"], ans: "C" },
+      { id: 16, q: "Perbedaan mendasar antara Network Intrusion Detection System (NIDS) dan Network Intrusion Prevention System (NIPS) adalah...", options: ["A. NIDS memblokir trafik secara aktif, NIPS hanya mencatat", "B. NIDS bekerja secara pasif memberikan peringatan (Alert), sedangkan NIPS terpasang inline untuk memblokir ancaman secara langsung", "C. NIDS tidak memerlukan aturan (rules)", "D. NIPS hanya dapat mendeteksi virus file", "E. Keduanya tidak memiliki perbedaan fungsi"], ans: "B" },
+      { id: 17, q: "Perintah CLI Linux yang digunakan untuk menerapkan perubahan konfigurasi setelah menyunting `/etc/ssh/sshd_config` adalah...", options: ["A. systemctl restart sshd", "B. service ssh stop", "C. systemctl status apache2", "D. reboot -f", "E. ssh-keygen -reload"], ans: "A" },
+      { id: 18, q: "Langkah hardening untuk meminimalkan permukaan serangan (Attack Surface) pada server produksi adalah...", options: ["A. Menginstal seluruh paket aplikasi dari repositori", "B. Mematikan (disable/stop) servis dan port terbuka yang tidak digunakan", "C. Membuka seluruh port firewall agar aplikasi lancar", "D. Memberikan akses sudo tanpa password ke semua user", "E. Menimpa file konfigurasi default"], ans: "B" },
+      { id: 19, q: "Perintah Linux untuk membuat pasangan kunci autentikasi SSH Public/Private Key adalah...", options: ["A. ssh-keygen -t rsa -b 4096", "B. ssh-add -root", "C. chmod 777 /etc/ssh", "D. cat /dev/null > sshd", "E. ufw allow 22/tcp"], ans: "A" },
+      { id: 20, q: "Manfaat utama dari penerapan manajemen log terpusat (Centralized Log Management) dalam Security Operations Center (SOC) adalah...", options: ["A. Menghemat kapasitas penyimpanan harddisk PC client", "B. Memudahkan korelasi peristiwa keamanan dan analisis forensik digital dari berbagai perangkat jaringan dalam satu panel", "C. Mengganti fungsi firewall utama", "D. Menyembunyikan log dari administrator", "E. Mempercepat koneksi bandwidth internet"], ans: "B" }
+    ];
+
+    // --- SIMULASI 25: SSH HARDENING LOGIC ---
+    let sim25Score = 0;
+    let sim25LastResult = null;
+
+    function auditSim25SSH() {
+      const port = document.getElementById('sim25-port').value;
+      const root = document.getElementById('sim25-root').value;
+      const passauth = document.getElementById('sim25-passauth').value;
+      const scoreBadge = document.getElementById('sim25-score-badge');
+
+      sim25Score = 0;
+      if (port === "2244") sim25Score += 35;
+      if (root === "no") sim25Score += 35;
+      if (passauth === "no") sim25Score += 30;
+
+      scoreBadge.innerText = `Hardening Score: ${sim25Score}/100`;
+      if (sim25Score === 100) {
+        scoreBadge.className = "text-emerald-400 font-bold";
+      } else if (sim25Score >= 35) {
+        scoreBadge.className = "text-amber-400 font-bold";
+      } else {
+        scoreBadge.className = "text-rose-400 font-bold";
+      }
+    }
+
+    function testSim25SSH(testType) {
+      const port = document.getElementById('sim25-port').value;
+      const root = document.getElementById('sim25-root').value;
+      const passauth = document.getElementById('sim25-passauth').value;
+      const out = document.getElementById('sim25-terminal-out');
+
+      if (testType === 'root22') {
+        if (port === "22" && root === "yes") {
+          out.innerHTML = `<span class="text-rose-400 font-bold">[VULNERABLE] Connected to 192.168.1.10:22 as ROOT!<br>Password prompt accepted $\rightarrow$ Critical Root Exposure!</span>`;
+          sim25LastResult = { param: "Port 22, Root Login YES", test: "ssh root@192.168.1.10 -p 22", res: "Access Granted (UNSECURE ROOT EXPOSED)", status: "VULNERABLE (Skor " + sim25Score + ")" };
+          showToast("Akses Terbuka!", "Server rentan diserang Brute Force Superuser!", "warning");
+        } else {
+          out.innerHTML = `<span class="text-emerald-400 font-bold">[SECURE] ssh: connect to host 192.168.1.10 port 22: Connection refused.<br>(Root Login Disabled or Port Switched).</span>`;
+          sim25LastResult = { param: `Port ${port}, Root ${root}`, test: "ssh root@192.168.1.10 -p 22", res: "Connection Refused (Aman)", status: "HARDENED (Skor " + sim25Score + ")" };
+          showToast("Koneksi Ditolak!", "SSH Hardening berhasil menolak akses langsung Root.", "success");
+        }
+      } else if (testType === 'user2244') {
+        if (port === "2244" && passauth === "no") {
+          out.innerHTML = `<span class="text-emerald-400 font-bold">[SECURE ACCESS] Authenticated via id_rsa SSH Key on Custom Port 2244.<br>Welcome to Server Linux! Access Granted (Encrypted & Hardened).</span>`;
+          sim25LastResult = { param: "Port 2244, Key Auth, Root Disabled", test: "ssh -i id_rsa user1@192.168.1.10 -p 2244", res: "SSH Key Authenticated (Custom Port)", status: "SECURE HARDENED (Skor 100)" };
+          showToast("Akses Key Berhasil!", "Server berhasil diamankan dengan Custom Port & SSH Key.", "success");
+        } else if (port !== "2244") {
+          out.innerHTML = `<span class="text-rose-400">[ERROR] ssh: connect to host 192.168.1.10 port 2244: Connection refused.<br>Port server belum diubah ke 2244!</span>`;
+        } else {
+          out.innerHTML = `<span class="text-amber-400">[WARNING] Connected to port 2244, but PasswordAuthentication is still ENABLED.<br>Hardening belum maksimal!</span>`;
+        }
+      }
+    }
+
+
+    // --- SIMULASI 26: WIRESHARK PACKET SNIFFER LOGIC ---
+    let sim26ActivePkt = 'http';
+    let sim26LastResult = null;
+
+    function applySim26Filter() {
+      const filterVal = document.getElementById('sim26-filter').value.trim();
+      const rowHttp = document.getElementById('row-pkt-http');
+      const rowHttps = document.getElementById('row-pkt-https');
+
+      if (filterVal.includes('http') || filterVal.includes('POST')) {
+        rowHttp.classList.remove('hidden');
+        rowHttps.classList.add('hidden');
+        selectSim26Packet('http');
+        showToast("Filter Applied", "Menampilkan paket HTTP POST request.", "info");
+      } else if (filterVal.includes('tls') || filterVal.includes('443') || filterVal.includes('https')) {
+        rowHttp.classList.add('hidden');
+        rowHttps.classList.remove('hidden');
+        selectSim26Packet('https');
+        showToast("Filter Applied", "Menampilkan paket terenkripsi TLSv1.3.", "info");
+      } else {
+        rowHttp.classList.remove('hidden');
+        rowHttps.classList.remove('hidden');
+        showToast("Filter Reset", "Menampilkan seluruh lalu lintas terdeteksi.", "info");
+      }
+    }
+
+    function selectSim26Packet(type) {
+      sim26ActivePkt = type;
+      const streamBox = document.getElementById('sim26-stream-box');
+      const riskTag = document.getElementById('sim26-risk-tag');
+      const rowHttp = document.getElementById('row-pkt-http');
+      const rowHttps = document.getElementById('row-pkt-https');
+
+      if (type === 'http') {
+        rowHttp.className = "cursor-pointer bg-rose-100 font-bold border-l-4 border-rose-600 transition";
+        rowHttps.className = "cursor-pointer hover:bg-emerald-50 transition";
+
+        riskTag.innerText = "CRITICAL PLAINTEXT EXPOSURE";
+        riskTag.className = "font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded";
+
+        streamBox.innerHTML = `POST /login.php HTTP/1.1<br>Host: sekolah.sch.id<br>Content-Type: application/x-www-form-urlencoded<br><br><span class="bg-rose-950 text-rose-200 font-bold px-1">username=admin_sekolah&password=RahasiaNegara123</span>`;
+        
+        sim26LastResult = { proto: "HTTP (Plaintext)", filter: 'http.request.method == "POST"', payload: "username=admin_sekolah&password=RahasiaNegara123", status: "CRITICAL RISK (Plaintext Exposed)" };
+      } else {
+        rowHttps.className = "cursor-pointer bg-emerald-100 font-bold border-l-4 border-emerald-600 transition";
+        rowHttp.className = "cursor-pointer hover:bg-rose-50 transition";
+
+        riskTag.innerText = "SECURE ENCRYPTED (TLSv1.3)";
+        riskTag.className = "font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded";
+
+        streamBox.innerHTML = `<span class="text-emerald-400">\x16\x03\x03\x00\x7a\x01\x00\x00\x76\x03\x03\xe8\xa9\xf0\x1b\x3c\x84\xd7\xe1\x9f... [TLSv1.3 ENCRYPTED CIPHERTEXT - PAYLOAD UNREADABLE]</span>`;
+        
+        sim26LastResult = { proto: "HTTPS (TLSv1.3)", filter: 'tls', payload: "Garbage Ciphertext (Terenkripsi SSL/TLS)", status: "SECURE (Payload Protected)" };
+      }
+    }
+
+
+    // --- SIMULASI 27: SYSLOG ANALYTICS LOGIC ---
+    let sim27Blocked = false;
+    let sim27LastResult = null;
+
+    function blockSim27IP() {
+      const btn = document.getElementById('btn-sim27-block');
+      const rateText = document.getElementById('sim27-rate');
+      const graphPath = document.getElementById('sim27-graph-path');
+      const stream = document.getElementById('sim27-syslog-stream');
+
+      if (!sim27Blocked) {
+        sim27Blocked = true;
+        btn.innerText = "IP Blocked";
+        btn.className = "px-2 py-0.5 bg-slate-400 text-white font-bold rounded text-[9px] cursor-not-allowed";
+        btn.disabled = true;
+
+        rateText.innerText = "5 req/min (Normal Traffic)";
+        rateText.className = "text-emerald-600 font-bold";
+
+        // Flatten graph SVG
+        graphPath.setAttribute('d', 'M0,35 L20,34 L40,35 L50,34 L60,35 L70,35 L100,35');
+        graphPath.setAttribute('stroke', '#059669');
+
+        stream.innerHTML += `<div class="text-emerald-400 font-bold">[iptables] DROP src IP 103.45.12.8 target SSH permanently blocked.</div>`;
+        stream.scrollTop = stream.scrollHeight;
+
+        sim27LastResult = { attackerIP: "103.45.12.8", attackType: "SSH Brute Force (1,200 req/min)", action: "IP Blocked via Firewall Blacklist", status: "MITIGATED (Normal Traffic)" };
+        showToast("IP Berhasil Diblokir!", "Firewall menolak seluruh paket dari IP 103.45.12.8.", "success");
+      }
+    }
+
+
+    // --- SIMULASI 28: SNORT NIDS LOGIC ---
+    let sim28LastResult = null;
+
+    function triggerSim28Attack(type) {
+      const act = document.getElementById('sim28-action').value;
+      const proto = document.getElementById('sim28-proto').value;
+      const dst = document.getElementById('sim28-dst').value;
+      const opt = document.getElementById('sim28-options').value;
+      const consoleOut = document.getElementById('sim28-alert-console');
+
+      if (type === 'http_flood') {
+        if (act === 'alert' && proto === 'tcp') {
+          consoleOut.innerHTML = `<span class="text-rose-400 font-bold">[**] [1:1000001:1] Possible HTTP Flood Attack Detected [**]<br>[Priority: 0] {TCP} 182.10.4.2:50122 -> ${dst} (Rate Limit Exceeded: >50 req/5s)</span>`;
+          sim28LastResult = { rule: `${act} ${proto} any any -> ${dst}`, attack: "HTTP Flood (100 req/2s)", alertOut: "[1:1000001:1] Possible HTTP Flood Attack Detected", status: "ALERT TRIGGERED (Pass)" };
+          showToast("Alarm Terpemicu!", "Snort NIDS mendeteksi lonjakan HTTP Flood!", "warning");
+        } else {
+          consoleOut.innerHTML = `<span class="text-amber-400">[WARNING] Traffic flood received, but Snort rule action/protocol does not match (Current: ${act} ${proto}).</span>`;
+        }
+      } else {
+        consoleOut.innerHTML = `<span class="text-emerald-400">[NORMAL TRAFFIC] HTTP GET /index.html (2 req/s) $\rightarrow$ No rule match. Traffic passed cleanly.</span>`;
+        sim28LastResult = { rule: `${act} ${proto} any any -> ${dst}`, attack: "Normal Web Traffic", alertOut: "No Alert (Below Threshold)", status: "NORMAL TRAFFIC" };
+        showToast("Trafik Normal", "Trafik berada di bawah threshold penafsiran rule.", "info");
+      }
+    }
+
+
+    // RECORD SIMULATION LOGS TO TABLE
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 25) {
+        if (!sim25LastResult) {
+          showToast("Perhatian", "Jalankan perintah pengujian CLI pada Simulasi 25 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 25: SSH Hardening",
+          param: sim25LastResult.param,
+          hasil: `${sim25LastResult.test} $\rightarrow$ ${sim25LastResult.res}`,
+          status: sim25LastResult.status
+        };
+      } else if (simNum === 26) {
+        if (!sim26LastResult) {
+          showToast("Perhatian", "Pilih paket HTTP/HTTPS pada Simulasi 26 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 26: Wireshark Sniffer Visualizer",
+          param: `Protokol: ${sim26LastResult.proto} | Filter: ${sim26LastResult.filter}`,
+          hasil: `Payload: ${sim26LastResult.payload}`,
+          status: sim26LastResult.status
+        };
+      } else if (simNum === 27) {
+        if (!sim27LastResult) {
+          showToast("Perhatian", "Klik tombol Block IP pada Simulasi 27 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 27: Centralized Syslog",
+          param: `Attacker IP: ${sim27LastResult.attackerIP} (${sim27LastResult.attackType})`,
+          hasil: sim27LastResult.action,
+          status: sim27LastResult.status
+        };
+      } else if (simNum === 28) {
+        if (!sim28LastResult) {
+          showToast("Perhatian", "Jalankan tombol simulasi serangan pada Simulasi 28 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 28: Snort NIDS Rule Builder",
+          param: `Rule: ${sim28LastResult.rule}`,
+          hasil: `Pengujian: ${sim28LastResult.attack} $\rightarrow$ ${sim28LastResult.alertOut}`,
+          status: sim28LastResult.status
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum hardening berhasil disimpan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
+        if (row.status.includes("VULNERABLE") || row.status.includes("RISK") || row.status.includes("EXPOSED")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+        if (row.status.includes("HARDENED") || row.status.includes("SECURE") || row.status.includes("MITIGATED") || row.status.includes("PASS")) badgeColor = "bg-emerald-50 text-emerald-800 border border-emerald-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Parameter Konfigurasi,Hasil Pengukuran,Status Evaluasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "System_Hardening_LKPD07_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBank.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-slate-900">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let skorBenar = 0;
+      questionBank.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden', 'bg-slate-100', 'text-slate-800');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-slate-800 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-800 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBank.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+      const pilihanLkpdTerpilih = "LKPD 07: System Hardening & Monitoring Jaringan";
+
+      const payload = {
+        sekolah: sekolah,
+        nama_lengkap: nama,
+        pilihan_lkpd: pilihanLkpdTerpilih,
+        kelas: kelas,
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir,
+        tabelPengamatan: tableData
+      };
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai SSH Hardening, Analisis Wireshark Sniffer, Syslog Monitoring, dan Rules Snort NIDS.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali sintaks Rule Snort dan cara membaca entri log SSH Brute Force.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi pengamanan SSH Port Switching dan pengujian HTTP vs HTTPS.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      const statusKirimEl = document.getElementById('status-kirim-gas');
+      statusKirimEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-slate-600"></i> Mengirim data ke server guru...`;
+      document.getElementById('modal-result').classList.remove('hidden');
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil terkirim ke spreadsheet guru!`;
+      } catch (err) {
+        console.error("Gagal mengirim data via fetch:", err);
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-600"></i> Gagal otomatis via Fetch (Offline).`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function cetakLaporan() {
+      closeModal();
+      window.print();
+    }
+
+    function resetFormPrompt() {
+      showConfirm("Reset LKPD", "Apakah Anda yakin ingin meriset seluruh isian dan data praktikum LKPD 07 ini?", () => {
+        document.getElementById('sel-sekolah').value = "";
+        updateDropdownKelas();
+        tableData = [];
+        waktuMulai = 0;
+        renderTabelPengamatan();
+        document.getElementById('form-quiz').reset();
+        questionBank.forEach(q => {
+          const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+        });
+        document.getElementById('btn-download-pdf').classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("Reset Selesai", "Formulir telah dikembalikan ke kondisi awal.", "info");
+      });
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = "bg-slate-900 text-white border-slate-700";
+      let icon = "fa-circle-info text-slate-300";
+
+      toast.className = `p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-xs min-w-[260px] max-w-xs transition transform translate-y-2 opacity-0 pointer-events-auto ${bg}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <p class="font-bold mb-0.5">${title}</p>
+          <p class="text-slate-300 leading-tight">${message}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      modal.classList.remove('hidden');
+
+      const btnYes = document.getElementById('btn-confirm-yes');
+      const btnCancel = document.getElementById('btn-confirm-cancel');
+
+      const handleYes = () => { cleanup(); onConfirm(); };
+      const handleCancel = () => { cleanup(); };
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', handleYes);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnYes.addEventListener('click', handleYes);
+      btnCancel.addEventListener('click', handleCancel);
+    }
+
+    window.onload = function () {
+      initDatabaseSiswa();
+      renderQuiz();
+    };
+  </script>
+</body>
+</html>
