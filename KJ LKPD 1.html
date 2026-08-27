@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 01: Fundamental Keamanan & Analisis Ancaman</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { fill: #ef4444; stroke: #b91c1c; stroke-width: 3px; }
+      50% { fill: #f87171; stroke: #dc2626; stroke-width: 6px; }
+    }
+    .node-infected { animation: pulse-red 1.2s infinite; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Clean Header Section -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-300">
+          <i class="fa-solid fa-shield-halved text-2xl text-slate-800"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 01: Fundamental Keamanan & Analisis Ancaman</h1>
+          <p class="text-xs text-slate-500 mt-0.5">CIA Triad, Defense in Depth, Malware & Phishing Header Analysis, Social Engineering Tree, Risk Matrix</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Harap pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul laboratorium praktikum keamanan siber.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Keamanan Siber -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Fundamental Keamanan Informasi & Analisis Ancaman
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">NIST & ISO/IEC 27001</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Keamanan informasi bertumpu pada perlindungan aset data dari berbagai spektrum ancaman melalui penerapan arsitektur berlapis (<b>Defense in Depth</b>) serta penjelakan nilai risiko operasional.
+        </p>
+
+        <!-- CIA Triad Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-cubes text-slate-700 mr-1.5"></i> Pilar Utama Keamanan Informasi (CIA Triad)</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Prinsip Keamanan</th>
+                  <th class="p-2.5 border-b border-slate-200">Definisi Operasional</th>
+                  <th class="p-2.5 border-b border-slate-200">Bentuk Serangan Spesifik</th>
+                  <th class="p-2.5 border-b border-slate-200">Kontrol Mitigasi Utamanya</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Confidentiality (Kerahasiaan)</td>
+                  <td class="p-2.5">Menjamin data hanya dapat diakses oleh pihak yang memiliki wewenang resmi.</td>
+                  <td class="p-2.5">Eavesdropping, Man-in-the-Middle (MitM), Social Engineering</td>
+                  <td class="p-2.5 font-mono">Enkripsi AES-256, TLS 1.3, RBAC</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Integrity (Integritas)</td>
+                  <td class="p-2.5">Menjamin keaslian dan mencegah modifikasi data tanpa otoritas sah.</td>
+                  <td class="p-2.5">Data Tampering, SQL Injection, Web Defacement</td>
+                  <td class="p-2.5 font-mono">Hashing SHA-256, Digital Signature</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Availability (Ketersediaan)</td>
+                  <td class="p-2.5">Menjamin akses sistem dan layanan selalu siap saat dibutuhkan pengguna legitimate.</td>
+                  <td class="p-2.5">DoS / DDoS Attack, Ransomware Encryption</td>
+                  <td class="p-2.5 font-mono">Load Balancer, Redundancy, Automated Backup</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-slate-700"></i> Konsep Defense in Depth
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              Strategi pertahanan berlapis dengan mengombinasikan keamanan fisik, jaringan (Firewall/IDS), host (Antivirus/EDR), aplikasi, dan edukasi SDM (Human Layer).
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-calculator text-slate-700"></i> Persamaan Penilaian Risiko
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              $$\text{Risk Level} = \text{Likelihood (Kemungkinan)} \times \text{Impact (Dampak Kritis)}$$
+              Menentukan urgensi penanganan aset bernilai tinggi sebelum penyerangan tereksploitasi.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Keamanan Siber
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis header email phishing, uji OpSec social engineering, isolasi worm jaringan, dan pemetaan risiko.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Clean White Studio Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Phishing vs Legit Email Inspector -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-envelope-open-text text-slate-800"></i> Simulasi 1: Phishing Email Inspector
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Header & Link Analysis</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Pilih pesan di kotak masuk, periksa header teknis dan URL asli sebelum memutuskan.</p>
+
+              <!-- Email Client Layout -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden mb-3 bg-white">
+                <!-- Mail Selector Header -->
+                <div class="bg-slate-50 p-2 border-b border-slate-200 flex gap-2 overflow-x-auto">
+                  <button onclick="selectEmail(0)" id="mail-tab-0" class="mail-tab-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-900">Email #1 (Bank ABC)</button>
+                  <button onclick="selectEmail(1)" id="mail-tab-1" class="mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600">Email #2 (HRD Internal)</button>
+                  <button onclick="selectEmail(2)" id="mail-tab-2" class="mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600">Email #3 (Google Alert)</button>
+                </div>
+
+                <!-- Top Inspection Action Bar -->
+                <div class="p-2 border-b border-slate-200 bg-white flex flex-wrap gap-1.5">
+                  <button onclick="toggleRawHeader()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-code mr-1"></i> [Lihat Raw Header]</button>
+                  <button onclick="inspectURL()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-link mr-1"></i> [Inspect URL]</button>
+                  <button onclick="checkSPFDKIM()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-certificate mr-1"></i> [Cek SPF/DKIM]</button>
+                </div>
+
+                <!-- Reading Pane -->
+                <div class="p-4 bg-white min-h-[140px] text-xs" id="email-reading-pane">
+                  <!-- Dynamic JS Content -->
+                </div>
+
+                <!-- Inspection Result Popup Area -->
+                <div id="sim1-inspect-box" class="p-3 bg-slate-50 border-t border-slate-200 text-xs font-mono-code hidden">
+                  <!-- JS Output Inspection Details -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Decision Bar -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+              <span class="text-[10px] text-slate-500 font-semibold">Keputusan Siswa:</span>
+              <div class="flex gap-2">
+                <button onclick="judgeEmail('SAFE')" class="bg-white hover:bg-slate-100 border border-slate-300 text-slate-900 font-semibold text-xs px-3 py-1.5 rounded-lg transition">
+                  <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> [Tandai Aman]
+                </button>
+                <button onclick="judgeEmail('PHISHING')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition">
+                  <i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> [Laporkan Phishing]
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Social Engineering Scenario Tree -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-diagram-nested text-slate-800"></i> Simulasi 2: Social Engineering Tree
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Interactive OpSec Tree</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Hadapi desakan penyamar untuk menguji prosedur kewaspadaan operasional (OpSec).</p>
+
+              <!-- Node Narrative Box & Gauges -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <!-- Attacker Card Node -->
+                <div class="md:col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
+                  <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Kartu Skenario Percakapan:</span>
+                  <p id="sim2-dialogue" class="font-medium text-slate-900 leading-relaxed italic">
+                    "Halo admin! Saya Direktur Utama. Token VPN saya rusak dan saya ada rapat penting 5 menit lagi. Tolong reset password & kirim token VPN baru sekarang!"
+                  </p>
+                </div>
+
+                <!-- Gauges Sidebar -->
+                <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs flex flex-col justify-between">
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Security Score:</span>
+                    <span id="sim2-score" class="text-xl font-extrabold font-mono text-slate-900">100%</span>
+                  </div>
+                  <div class="border-t border-slate-100 pt-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Leak Gauge:</span>
+                    <span id="sim2-leak" class="text-xs font-bold font-mono text-emerald-600">SAFE (0 DATA)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Response Options -->
+              <div class="space-y-2 mb-3" id="sim2-options-container">
+                <!-- JS Dynamic Child Nodes -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Pilih tindakan sesuai SOP Keamanan.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 3: Social Network Malware Spreading -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-network-wired text-slate-800"></i> Simulasi 3: Malware Spreading & Isolation
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Network Containment</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Isolasi node/koneksi sebelum infeksi Worm menyebar ke seluruh segmen LAN.</p>
+
+              <!-- Node Graph Interactive Canvas -->
+              <div class="grid-bg-pattern border border-slate-200 rounded-xl p-3 relative min-h-[170px] flex items-center justify-center mb-3 overflow-hidden">
+                <svg id="sim3-svg-canvas" class="w-full h-[160px]">
+                  <!-- Links -->
+                  <line id="link-0-1" x1="50" y1="80" x2="140" y1="40" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-1')" />
+                  <line id="link-0-2" x1="50" y1="80" x2="140" y1="120" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-2')" />
+                  <line id="link-1-3" x1="140" y1="40" x2="240" y1="40" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('1-3')" />
+                  <line id="link-2-4" x1="140" y1="120" x2="240" y1="120" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('2-4')" />
+                  <line id="link-3-5" x1="240" y1="40" x2="330" y1="80" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('3-5')" />
+                  <line id="link-4-5" x1="240" y1="120" x2="330" y1="80" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('4-5')" />
+
+                  <!-- Nodes -->
+                  <g id="node-0" onclick="isolateNode(0)" class="cursor-pointer">
+                    <circle cx="50" cy="80" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-0" />
+                    <text x="50" y="84" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">P0</text>
+                  </g>
+
+                  <g id="node-1" onclick="isolateNode(1)" class="cursor-pointer">
+                    <circle cx="140" cy="40" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-1" />
+                    <text x="140" y="44" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">PC1</text>
+                  </g>
+
+                  <g id="node-2" onclick="isolateNode(2)" class="cursor-pointer">
+                    <circle cx="140" cy="120" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-2" />
+                    <text x="140" y="124" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">PC2</text>
+                  </g>
+
+                  <g id="node-3" onclick="isolateNode(3)" class="cursor-pointer">
+                    <circle cx="240" cy="40" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-3" />
+                    <text x="240" y="44" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">SVR1</text>
+                  </g>
+
+                  <g id="node-4" onclick="isolateNode(4)" class="cursor-pointer">
+                    <circle cx="240" cy="120" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-4" />
+                    <text x="240" y="124" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">SVR2</text>
+                  </g>
+
+                  <g id="node-5" onclick="isolateNode(5)" class="cursor-pointer">
+                    <circle cx="330" cy="80" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-5" />
+                    <text x="330" y="84" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">DB</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-2">
+                <button onclick="startMalwareSpread()" id="btn-start-malware" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                  <i class="fa-solid fa-play mr-1"></i> Mulai Simulasi Worm
+                </button>
+                <button onclick="resetMalwareSim()" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium text-xs px-2.5 py-1.5 rounded-lg transition">
+                  <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+              </div>
+              <span id="sim3-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Siap</span>
+            </div>
+          </div>
+
+          <!-- Simulasi 4: Risk Matrix Assessor -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-table-cells text-slate-800"></i> Simulasi 4: Risk Matrix Assessor (3x3)
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">ISO 27001 Assessment</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Petakan skenario ancaman ke matriks dampak vs kemungkinan, lalu tentukan mitigasi.</p>
+
+              <!-- Asset List & 3x3 Matrix Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <!-- Asset Selector Left -->
+                <div class="space-y-2 text-xs">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase block">Pilih Aset & Ancaman:</span>
+                  <div onclick="selectRiskAsset(0)" id="risk-asset-0" class="risk-asset-card p-2.5 rounded-xl border border-slate-300 bg-white cursor-pointer hover:border-slate-400 font-medium">
+                    <p class="font-bold text-slate-900">1. Database Keuangan</p>
+                    <p class="text-[10px] text-slate-500">Ancaman: Ransomware & Tanpa Backup</p>
+                  </div>
+                  <div onclick="selectRiskAsset(1)" id="risk-asset-1" class="risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400">
+                    <p class="font-bold text-slate-900">2. Router Core Utama</p>
+                    <p class="text-[10px] text-slate-500">Ancaman: DDoS Attack dari Internet</p>
+                  </div>
+                  <div onclick="selectRiskAsset(2)" id="risk-asset-2" class="risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400">
+                    <p class="font-bold text-slate-900">3. Wi-Fi Tamu Kantor</p>
+                    <p class="text-[10px] text-slate-500">Ancaman: Eavesdropping / Sniffing</p>
+                  </div>
+                </div>
+
+                <!-- 3x3 Risk Matrix Box Right -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-[10px]">
+                  <span class="font-bold text-slate-600 block mb-1 text-center">Matriks Risiko (Likelihood vs Impact)</span>
+                  <div class="grid grid-cols-3 gap-1 text-center font-semibold">
+                    <div onclick="placeRiskInMatrix('Low', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">L-Unlikely</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">M-Unlikely</div>
+                    <div onclick="placeRiskInMatrix('High', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">H-Unlikely</div>
+
+                    <div onclick="placeRiskInMatrix('Low', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">L-Likely</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">M-Likely</div>
+                    <div onclick="placeRiskInMatrix('High', 'Likely')" id="cell-high-likely" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">H-Likely</div>
+
+                    <div onclick="placeRiskInMatrix('Low', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">L-Highly</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">M-Highly</div>
+                    <div onclick="placeRiskInMatrix('High', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">H-Highly</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mitigation Selection Area -->
+              <div id="sim4-mitigation-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs mb-3 hidden">
+                <!-- JS Options for Mitigation -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim4-status-text" class="text-slate-600 font-medium">Pilih aset lalu petakan ke matriks.</span>
+              <button onclick="catatSimulasi(4)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Keamanan Siber
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Catatan log eksperimen yang direkap secara otomatis dari modul laboratorium simulasi di atas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Parameter Konfigurasi / Pengujian</th>
+                <th class="px-4 py-3">Hasil / Pengukuran Kinerja</th>
+                <th class="px-4 py-3">Status Evaluasi Keamanan</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Keamanan Informasi & Analisis Ancaman
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman teori dan praktikum Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+          <button id="btn-download-pdf" onclick="cetakLaporan()" class="hidden flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Cetak / Unduh PDF
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-slate-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD 01 Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil dikirim ke server guru.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+          <button onclick="cetakLaporan()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-pdf"></i> Cetak Laporan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-slate-300">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-slate-900 text-base mb-1" id="confirm-title">Konfirmasi Tindakan</h4>
+      <p class="text-xs text-slate-600 mb-5" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      <div class="flex gap-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-yes" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let waktuMulai = 0;
+    let masterDataSiswa = [];
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      masterDataSiswa = [];
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          masterDataSiswa.push({ sekolah, kelas, nama });
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.createElement('option');
+          opt.value = nama;
+          opt.textContent = nama;
+          selNama.appendChild(opt);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-800 font-medium px-3 py-1 rounded-full border border-slate-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // Question Bank: 20 Items for Fundamental Cyber Security
+    const questionBank = [
+      { id: 1, q: "Prinsip CIA Triad yang bertujuan untuk menjamin bahwa data hanya dapat diakses oleh pihak yang sah dinamakan...", options: ["A. Confidentiality", "B. Integrity", "C. Availability", "D. Authentication", "E. Non-repudiation"], ans: "A" },
+      { id: 2, q: "Serangan cyber yang memblokir akses ke sistem atau mengunci berkas dengan enkripsi lalu meminta tebusan adalah...", options: ["A. Trojan", "B. Ransomware", "C. Spyware", "D. Worm", "E. Keylogger"], ans: "B" },
+      { id: 3, q: "Metode penipuan digital yang memanipulasi korban agar memberikan kredensial sensitif melalui pesan/email tiruan dinamakan...", options: ["A. Man-in-the-Middle", "B. DDoS", "C. Phishing", "D. SQL Injection", "E. Zero-day Exploit"], ans: "C" },
+      { id: 4, q: "Penyebab utama header Return-Path berbeda dengan alamat email pada kolom From: adalah...", options: ["A. Jaringan mengalami latency tinggi", "B. Pengirim melakukan domain spoofing / server perantara berbeda", "C. Email terenkripsi end-to-end", "D. Pengirim menggunakan antivirus", "E. Lampiran email terlalu besar"], ans: "B" },
+      { id: 5, q: "Mekanisme autentikasi domain email yang memvalidasi bahwa IP server pengirim diizinkan memancar atas nama domain tersebut adalah...", options: ["A. TLS", "B. SPF (Sender Policy Framework)", "C. SSL", "D. HTTPS", "E. VPN"], ans: "B" },
+      { id: 6, q: "Dalam serangan Man-in-the-Middle (MitM), penyerang menempatkan dirinya di antara dua pihak yang berkomunikasi untuk...", options: ["A. Merusak perangkat fisik server", "B. Mengintip atau memodifikasi lalu lintas data secara diam-diam", "C. Mematikan pasokan listrik datacenter", "D. Menghapus akun admin secara acak", "E. Mempercepat koneksi internet"], ans: "B" },
+      { id: 7, q: "Tujuan utama serangan Denial of Service (DoS) adalah merusak salah satu pilar CIA Triad, yaitu...", options: ["A. Confidentiality", "B. Integrity", "C. Availability", "D. Authenticity", "E. Authorization"], ans: "C" },
+      { id: 8, q: "Perbedaan utama antara Malware jenis Virus dan Worm terletak pada...", options: ["A. Virus memerlukan interaksi manusia / inang untuk menyebar, sedangkan Worm menyebar mandiri via jaringan", "B. Worm tidak pernah berbahaya", "C. Virus hanya menyerang HP", "D. Worm dibuat menggunakan Python", "E. Virus tidak bisa dideteksi antivirus"], ans: "A" },
+      { id: 9, q: "Penerapan strategi Defense in Depth mensyaratkan bahwa keamanan jaringan harus...", options: ["A. Hanya mengandalkan satu firewall mahal", "B. Menggunakan pengamanan berlapis (Fisik, Jaringan, Host, Aplikasi, SDM)", "C. Mematikan seluruh koneksi internet", "D. Hanya memasang password pada Wi-Fi", "E. Menghapus semua file cadangan"], ans: "B" },
+      { id: 10, q: "Tindakan OpSec terbaik ketika menerima panggilan telepon dari seseorang yang mengaku CEO dan mendesak reset password adalah...", options: ["A. Langsung reset sesuai perintah karena panik", "B. Meminta uang imbalan", "C. Menolak via telepon dan melakukan callback resmi ke nomor internal CEO sesuai SOP", "D. Memberikan password akun sendiri", "E. Mematikan router kantor"], ans: "C" },
+      { id: 11, q: "Dalam kalkulasi Risk Assessment, tingkat risiko (Risk Level) dihitung dari produk perkalian antara...", options: ["A. Cost dan Speed", "B. Impact dan Likelihood", "C. Bandwidth dan Storage", "D. CPU dan RAM", "E. Users dan Devices"], ans: "B" },
+      { id: 12, q: "Manakah teknik pertahanan yang paling tepat untuk memitigasi risiko kehilangan data akibat serangan Ransomware?", options: ["A. Mengganti monitor PC", "B. Menerapkan Daily Automated Offsite Backup & Network Isolation", "C. Mematikan sistem pendingin server", "D. Mengubah warna tema OS", "E. Menambah kapasitas RAM"], ans: "B" },
+      { id: 13, q: "Fitur autentikasi email DKIM (DomainKeys Identified Mail) bekerja dengan cara...", options: ["A. Mengunci email dengan password zip", "B. Menyertakan tanda tangan digital (Digital Signature) pada header pesan", "C. Memblokir semua lampiran pdf", "D. Mengubah format teks menjadi gambar", "E. Menghapus email otomatis setelah 24 jam"], ans: "B" },
+      { id: 14, q: "Malware yang menyamar sebagai perangkat lunak berguna atau sah namun memiliki muatan berbahaya dinamakan...", options: ["A. Ransomware", "B. Trojan Horse", "C. Adware", "D. Rootkit", "E. Keylogger"], ans: "B" },
+      { id: 15, q: "Tindakan pertama yang paling krusial saat sebuah komputer di dalam jaringan LAN terdeteksi terinfeksi malware penyebar cepat adalah...", options: ["A. Memformat ulang komputer tanpa backup", "B. Mengisolasi jaringan (Cut Link / Firewall Block) komputer tersebut", "C. Mengganti keyboard", "D. Mematikan lampu ruangan", "E. Mengirim email pemberitahuan ke seluruh staf"], ans: "B" },
+      { id: 16, q: "Serangan Distributed Denial of Service (DDoS) memanfaatkan banyak komputer terinfeksi yang dikendalikan terpusat. Komputer korban infeksi ini disebut...", options: ["A. Master Server", "B. Botnet / Zombie", "C. Honeypot", "D. Proxy Server", "E. DNS Gateway"], ans: "B" },
+      { id: 17, q: "Teknik manipulasi psikologis yang memanfaatkan rasa takut, urgensi, atau otoritas palsu dinamakan...", options: ["A. Cryptography", "B. Social Engineering", "C. Reverse Engineering", "D. Port Scanning", "E. Hardening"], ans: "B" },
+      { id: 18, q: "Mengapa teks URL tertulis pada tombol email tidak boleh langsung dipercaya?", options: ["A. Karena font bisa berganti", "B. Tautan hiperteks bisa dimanipulasi mengarah ke URL tujuan asli (real destination) yang berbeda", "C. Karena link email selalu kadaluarsa", "D. Karena warna tombol bisa berubah", "E. Karena internet selalu lambat"], ans: "B" },
+      { id: 19, q: "Kebijakan SOP keamanan yang mengatur bahwa pengguna hanya boleh diberi hak akses sebatas kebutuhan pekerjaannya dinamakan...", options: ["A. Principle of Least Privilege", "B. Open Access Policy", "C. Full Administrator Privileges", "D. Zero Security Policy", "E. Maximum Permission"], ans: "A" },
+      { id: 20, q: "Zona warna Merah (High Risk) pada Matriks Risiko 3x3 menuntut organisasi untuk...", options: ["A. Mengabaikan masalah karena terlalu mahal", "B. Segera mengambil tindakan mitigasi kontrol untuk menurunkan risiko", "C. Menutup perusahaan", "D. Membiarkan risiko terjadi alami", "E. Menghapus aset dari daftar"], ans: "B" }
+    ];
+
+    // Data State Simulasi 1: Phishing Email Inspector
+    const emailsData = [
+      {
+        id: 0,
+        subject: "Urgent: Verifikasi Keamanan Akun Bank ABC Anda",
+        sender: "Bank ABC Security <security-alert@bankabc-update-check.xyz>",
+        returnPath: "spammer-relay@unsecure-host.net",
+        receivedFrom: "mail.unsecure-host.net [185.220.101.5]",
+        body: `<p class="mb-2">Nasabah Yth,</p><p class="mb-3">Kami mendeteksi aktivitas mencurigakan pada akun Anda. Klik tombol di bawah ini dalam kurun 24 jam untuk memverifikasi ulang password Anda atau akun akan diblokir permanent.</p><p class="text-center my-3"><a href="#" class="bg-slate-900 text-white font-bold px-4 py-2 rounded">www.bankabc.com/verify-account</a></p>`,
+        realURL: "http://www.bankabc-update-check.xyz/login-phish.php",
+        spf: "FAIL",
+        dkim: "FAIL",
+        isPhish: true,
+        reason: "Domain pengirim palsu, Return-Path bertentangan, URL asli mengarahkan ke domain meragukan (.xyz), SPF/DKIM FAIL."
+      },
+      {
+        id: 1,
+        subject: "Pembaruan Jadwal Pelatihan Cyber Security Internal",
+        sender: "HRD Sekolah <hrd@smkn1singkawang.sch.id>",
+        returnPath: "hrd@smkn1singkawang.sch.id",
+        receivedFrom: "mail.smkn1singkawang.sch.id [103.20.14.2]",
+        body: `<p class="mb-2">Rekan-rekan guru & staf,</p><p class="mb-3">Berikut lampiran jadwal resmi pelatihan keamanan informasi sekolah. Silakan unduh dokumen modul pada portal internal sekolah.</p><p class="my-2"><a href="#" class="text-slate-900 font-bold underline">https://portal.smkn1singkawang.sch.id/jadwal</a></p>`,
+        realURL: "https://portal.smkn1singkawang.sch.id/jadwal",
+        spf: "PASS",
+        dkim: "PASS",
+        isPhish: false,
+        reason: "Alamat pengirim, Return-Path, dan IP server konsisten dengan domain sekolah sah. Autentikasi SPF & DKIM PASS."
+      },
+      {
+        id: 2,
+        subject: "Keamanan Akun: Percobaan Login Baru Terdeteksi",
+        sender: "Google Security Team <no-reply@accounts.google.com>",
+        returnPath: "bounce-3412@bounces.google.com",
+        receivedFrom: "mail-sor-f69.google.com [209.85.220.69]",
+        body: `<p class="mb-2">Halo,</p><p class="mb-3">Perangkat Linux baru saja login ke Akun Google Anda. Jika ini bukan Anda, segera amankan akun Anda melalui konsol akun resmi.</p><p class="my-2"><a href="#" class="text-slate-900 font-bold underline">myaccount.google.com/notifications</a></p>`,
+        realURL: "https://myaccount.google.com/notifications",
+        spf: "PASS",
+        dkim: "PASS",
+        isPhish: false,
+        reason: "Email otentik dari Google. Server pengirim valid dan URL mengarah langsung ke domain sah Google."
+      }
+    ];
+    let selectedEmailIdx = 0;
+
+    function selectEmail(idx) {
+      selectedEmailIdx = idx;
+      document.querySelectorAll('.mail-tab-btn').forEach((btn, i) => {
+        if (i === idx) {
+          btn.className = "mail-tab-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-900 shadow-2xs";
+        } else {
+          btn.className = "mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600";
+        }
+      });
+      document.getElementById('sim1-inspect-box').classList.add('hidden');
+      renderEmailContent();
+    }
+
+    function renderEmailContent() {
+      const email = emailsData[selectedEmailIdx];
+      const pane = document.getElementById('email-reading-pane');
+      pane.innerHTML = `
+        <div class="border-b border-slate-100 pb-2 mb-3">
+          <p class="font-bold text-slate-900 text-sm">${email.subject}</p>
+          <p class="text-[11px] text-slate-500">From: ${email.sender}</p>
+        </div>
+        <div>${email.body}</div>
+      `;
+    }
+
+    function toggleRawHeader() {
+      const email = emailsData[selectedEmailIdx];
+      const box = document.getElementById('sim1-inspect-box');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[TECHNICAL RAW HEADER]</p>
+        <p>From: ${email.sender}</p>
+        <p>Return-Path: ${email.returnPath}</p>
+        <p>Received: from ${email.receivedFrom}</p>
+      `;
+    }
+
+    function inspectURL() {
+      const email = emailsData[selectedEmailIdx];
+      const box = document.getElementById('sim1-inspect-box');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[REAL DESTINATION INSPECTION]</p>
+        <p>Displayed Anchor Text: www.bankabc.com/verify-account</p>
+        <p class="text-rose-600 font-bold">Real Target URL: ${email.realURL}</p>
+      `;
+    }
+
+    function checkSPFDKIM() {
+      const email = emailsData[selectedEmailIdx];
+      const box = document.getElementById('sim1-inspect-box');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[DOMAIN AUTHENTICATION STATUS]</p>
+        <p>SPF Verification : <span class="font-bold ${email.spf==='PASS'?'text-emerald-600':'text-rose-600'}">${email.spf}</span></p>
+        <p>DKIM Signature  : <span class="font-bold ${email.dkim==='PASS'?'text-emerald-600':'text-rose-600'}">${email.dkim}</span></p>
+      `;
+    }
+
+    function judgeEmail(decision) {
+      const email = emailsData[selectedEmailIdx];
+      let correct = (decision === 'PHISHING' && email.isPhish) || (decision === 'SAFE' && !email.isPhish);
+
+      if (correct) {
+        showToast("Keputusan Tepat!", `Analisis Anda benar. ${email.reason}`, "success");
+      } else {
+        showToast("Keputusan Kurang Tepat!", `Perhatikan kembali detailnya: ${email.reason}`, "warning");
+      }
+    }
+
+    // Data State Simulasi 2: Social Engineering Tree
+    const sim2TreeData = {
+      0: {
+        dialogue: '"Halo Admin! Saya Direktur Utama. Token VPN saya mendadak rusak dan saya ada rapat pemegang saham 5 menit lagi! Tolong reset password & kirim token VPN baru sekarang via WA ini!"',
+        score: 100,
+        leak: 'SAFE (0 DATA)',
+        options: [
+          { text: 'Opsi A (Rentan): Reset password langsung dan kirim kredensial baru via chat WhatsApp.', next: 1 },
+          { text: 'Opsi B (Keragu-raguan): Meminta NIK/Tanggal Lahir Direktur via telepon tanpa verifikasi saluran resmi.', next: 2 },
+          { text: 'Opsi C (Aman/SOP): Menolak permintaan via telepon, lalu melakukan verifikasi ulang (callback) ke nomor internal resmi CEO.', next: 3 }
+        ]
+      },
+      1: {
+        dialogue: 'PENYERANG BERHASIL! Penyerang mengontrol akun VPN CEO dan langsung mengakses server database utama sekolah/perusahaan.',
+        score: 10,
+        leak: 'CRITICAL LEAK (Full Network Hijacked)',
+        options: [{ text: 'Mulai Ulang Skenario', next: 0 }]
+      },
+      2: {
+        dialogue: 'Penyerang memberikan NIK palsu yang diperoleh dari medsos, lalu terus mengintimidasi Anda agar segera mengirimkan password.',
+        score: 45,
+        leak: 'MEDIUM RISK (Identitas Ditiru)',
+        options: [
+          { text: 'Tetap menyerahkan password karena panik diancam dipecat.', next: 1 },
+          { text: 'Tersadar dan langsung beralih mematuhi SOP Callback resmi.', next: 3 }
+        ]
+      },
+      3: {
+        dialogue: 'SOP SECURE! Anda menelepon ke ekstensi resmi sekretariat CEO. CEO asli mengonfirmasi tidak pernah meminta reset via telepon. Serangan Social Engineering digagalkan!',
+        score: 100,
+        leak: 'SAFE (0 DATA LEAKED)',
+        options: [{ text: 'Skenario Selesai dengan Sukses', next: 0 }]
+      }
+    };
+
+    function renderSim2Node(nodeId) {
+      const data = sim2TreeData[nodeId];
+      document.getElementById('sim2-dialogue').innerText = data.dialogue;
+      document.getElementById('sim2-score').innerText = `${data.score}%`;
+      
+      const leakEl = document.getElementById('sim2-leak');
+      leakEl.innerText = data.leak;
+      if (data.score < 50) leakEl.className = "text-xs font-bold font-mono text-rose-600";
+      else leakEl.className = "text-xs font-bold font-mono text-emerald-600";
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium text-slate-800 transition shadow-2xs flex items-center justify-between";
+        btn.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>`;
+        btn.onclick = () => renderSim2Node(opt.next);
+        container.appendChild(btn);
+      });
+    }
+
+    // Data State Simulasi 3: Worm Propagation
+    let nodeStates = [0, 0, 0, 0, 0, 0]; // 0: Clean, 1: Infected, 2: Isolated
+    let linkBroken = { '0-1': false, '0-2': false, '1-3': false, '2-4': false, '3-5': false, '4-5': false };
+    let sim3Interval = null;
+
+    function resetMalwareSim() {
+      if (sim3Interval) clearInterval(sim3Interval);
+      nodeStates = [0, 0, 0, 0, 0, 0];
+      linkBroken = { '0-1': false, '0-2': false, '1-3': false, '2-4': false, '3-5': false, '4-5': false };
+      
+      // Reset Links visual
+      Object.keys(linkBroken).forEach(k => {
+        const line = document.getElementById(`link-${k}`);
+        if (line) {
+          line.setAttribute('stroke', '#0f172a');
+          line.setAttribute('stroke-dasharray', 'none');
+        }
+      });
+
+      // Reset Nodes visual
+      for (let i = 0; i < 6; i++) {
+        const circle = document.getElementById(`circle-node-${i}`);
+        if (circle) {
+          circle.setAttribute('fill', '#ffffff');
+          circle.setAttribute('stroke', '#0f172a');
+          circle.classList.remove('node-infected');
+        }
+      }
+
+      document.getElementById('sim3-status-badge').className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700";
+      document.getElementById('sim3-status-badge').innerText = "Siap";
+      document.getElementById('btn-start-malware').disabled = false;
+    }
+
+    function toggleLink(linkKey) {
+      linkBroken[linkKey] = !linkBroken[linkKey];
+      const line = document.getElementById(`link-${linkKey}`);
+      if (linkBroken[linkKey]) {
+        line.setAttribute('stroke', '#cbd5e1');
+        line.setAttribute('stroke-dasharray', '4');
+        showToast("Koneksi Diputus", `Jalur jaringan ${linkKey} terputus (Cut Link).`, "info");
+      } else {
+        line.setAttribute('stroke', '#0f172a');
+        line.setAttribute('stroke-dasharray', 'none');
+      }
+    }
+
+    function isolateNode(nodeId) {
+      if (nodeStates[nodeId] === 1) {
+        showToast("Node Terinfeksi", "Node sudah terlanjur terinfeksi malware!", "warning");
+        return;
+      }
+      nodeStates[nodeId] = (nodeStates[nodeId] === 2) ? 0 : 2;
+      const circle = document.getElementById(`circle-node-${nodeId}`);
+      if (nodeStates[nodeId] === 2) {
+        circle.setAttribute('fill', '#f1f5f9');
+        circle.setAttribute('stroke', '#64748b');
+        showToast("Node Diisolasi", `Node #${nodeId} diaktifkan Firewall Block (Isolate Mode).`, "info");
+      } else {
+        circle.setAttribute('fill', '#ffffff');
+        circle.setAttribute('stroke', '#0f172a');
+      }
+    }
+
+    function startMalwareSpread() {
+      resetMalwareSim();
+      document.getElementById('btn-start-malware').disabled = true;
+      document.getElementById('sim3-status-badge').className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200";
+      document.getElementById('sim3-status-badge').innerText = "Simulasi Penyebaran Aktif!";
+
+      // Patient Zero (Node 0) infected
+      nodeStates[0] = 1;
+      const c0 = document.getElementById('circle-node-0');
+      c0.setAttribute('fill', '#ef4444');
+      c0.classList.add('node-infected');
+
+      const adjacency = [
+        [{ node: 1, link: '0-1' }, { node: 2, link: '0-2' }],
+        [{ node: 0, link: '0-1' }, { node: 3, link: '1-3' }],
+        [{ node: 0, link: '0-2' }, { node: 4, link: '2-4' }],
+        [{ node: 1, link: '1-3' }, { node: 5, link: '3-5' }],
+        [{ node: 2, link: '2-4' }, { node: 5, link: '4-5' }],
+        [{ node: 3, link: '3-5' }, { node: 4, link: '4-5' }]
+      ];
+
+      sim3Interval = setInterval(() => {
+        let newInfections = [];
+
+        for (let i = 0; i < 6; i++) {
+          if (nodeStates[i] === 1) { // Infected
+            adjacency[i].forEach(neighbor => {
+              const target = neighbor.node;
+              const link = neighbor.link;
+              if (nodeStates[target] === 0 && !linkBroken[link]) {
+                newInfections.push(target);
+              }
+            });
+          }
+        }
+
+        if (newInfections.length === 0) {
+          clearInterval(sim3Interval);
+          evaluateWormContainment();
+        } else {
+          newInfections.forEach(target => {
+            nodeStates[target] = 1;
+            const circle = document.getElementById(`circle-node-${target}`);
+            circle.setAttribute('fill', '#ef4444');
+            circle.classList.add('node-infected');
+          });
+        }
+      }, 1500);
+    }
+
+    function evaluateWormContainment() {
+      const infectedCount = nodeStates.filter(s => s === 1).length;
+      const badge = document.getElementById('sim3-status-badge');
+
+      if (infectedCount <= 2) {
+        badge.className = "text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
+        badge.innerText = `SANGAT BAIK: Terisolasi (${infectedCount} Node Terinfeksi)`;
+        showToast("Isolasi Berhasil!", "Penyebaran Worm berhasil dibendung dengan cepat!", "success");
+      } else {
+        badge.className = "text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200";
+        badge.innerText = `GAGAL: Worm Menyebar Wide (${infectedCount} Node Terinfeksi)`;
+        showToast("Infeksi Meluas", "Worm berhasil menginfeksi sebagian besar segmen jaringan.", "warning");
+      }
+    }
+
+    // Data State Simulasi 4: Risk Matrix Assessor
+    const riskAssetsData = [
+      { id: 0, name: "Database Keuangan", threat: "Ransomware & No Backup", correctImpact: "High", correctLikelihood: "Likely", mitigation: "Implementasi Daily Automated Offline Backup & EDR Software" },
+      { id: 1, name: "Router Core Utama", threat: "DDoS Attack", correctImpact: "High", correctLikelihood: "Unlikely", mitigation: "Implementasi Anti-DDoS Scrubbing & Rate Limiting" },
+      { id: 2, name: "Wi-Fi Tamu Kantor", threat: "Eavesdropping / Sniffing", correctImpact: "Low", correctLikelihood: "Likely", mitigation: "Isolasi VLAN Tamu & Enkripsi WPA3 Enterprise" }
+    ];
+    let selectedRiskAssetIdx = 0;
+
+    function selectRiskAsset(idx) {
+      selectedRiskAssetIdx = idx;
+      document.querySelectorAll('.risk-asset-card').forEach((card, i) => {
+        if (i === idx) {
+          card.className = "risk-asset-card p-2.5 rounded-xl border border-slate-400 bg-white cursor-pointer shadow-2xs font-medium";
+        } else {
+          card.className = "risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-300";
+        }
+      });
+      document.getElementById('sim4-status-text').innerText = `Petakan Aset #${idx+1} (${riskAssetsData[idx].name}) ke kotak matriks.`;
+    }
+
+    function placeRiskInMatrix(impact, likelihood) {
+      const asset = riskAssetsData[selectedRiskAssetIdx];
+      const box = document.getElementById('sim4-mitigation-box');
+      box.classList.remove('hidden');
+
+      let isCorrect = (impact === asset.correctImpact && likelihood === asset.correctLikelihood);
+
+      box.innerHTML = `
+        <p class="font-bold text-slate-900 mb-1">Pemetaan: ${asset.name} $\\rightarrow$ ${impact} Impact, ${likelihood} Likelihood</p>
+        <p class="text-[11px] text-slate-600 mb-2">${isCorrect ? '<span class="text-emerald-600 font-bold">✓ Pemetaan Matriks Tepat!</span>' : '<span class="text-rose-600 font-bold">✕ Pemetaan Kurang Sesuai Standar ISO.</span>'}</p>
+        <p class="font-bold text-slate-800 mb-1">Pilih Rekomendasi Mitigasi SOP:</p>
+        <select id="sel-mitigation-opt" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs">
+          <option value="">-- Pilih Langkah Mitigasi --</option>
+          <option value="${asset.mitigation}">${asset.mitigation}</option>
+          <option value="Abaikan saja karena biaya tinggi">Abaikan saja karena biaya tinggi</option>
+          <option value="Matikan seluruh koneksi internet perusahaan">Matikan seluruh koneksi internet perusahaan</option>
+        </select>
+      `;
+
+      document.getElementById('sim4-status-text').innerText = `Pilih rekomendasi mitigasi untuk menurunkan nilai risiko.`;
+    }
+
+    // RECORD SIMULATION LOGS
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 2) {
+        const score = document.getElementById('sim2-score').innerText;
+        const leak = document.getElementById('sim2-leak').innerText;
+        logEntry = {
+          modul: "Simulasi 2: Social Engineering Tree",
+          param: `OpSec Compliance Check`,
+          hasil: `Security Score: ${score}, Status Leak: ${leak}`,
+          status: score === '100%' ? "PASS (OpSec Safe)" : "RISK (OpSec Vulnerable)"
+        };
+      } else if (simNum === 4) {
+        const asset = riskAssetsData[selectedRiskAssetIdx];
+        const mitSel = document.getElementById('sel-mitigation-opt');
+        const selectedMit = mitSel ? mitSel.value : "Belum memilih mitigasi";
+
+        logEntry = {
+          modul: "Simulasi 4: Risk Matrix Assessor",
+          param: `Aset: ${asset.name}`,
+          hasil: `Mitigasi: ${selectedMit.substring(0, 30)}...`,
+          status: selectedMit === asset.mitigation ? "PASS (Risk Mitigated)" : "NEEDS REVIEW"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum berhasil disimpan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
+        if (row.status.includes("RISK") || row.status.includes("REVIEW")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Parameter Konfigurasi,Hasil Pengukuran,Status Evaluasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "CyberSecurity_LKPD01_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBank.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-slate-900">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let skorBenar = 0;
+      questionBank.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden', 'bg-slate-100', 'text-slate-800');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-slate-800 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-800 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBank.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+      const pilihanLkpdTerpilih = "LKPD 01: Fundamental Keamanan & Analisis Ancaman";
+
+      const payload = {
+        sekolah: sekolah,
+        nama_lengkap: nama,
+        pilihan_lkpd: pilihanLkpdTerpilih,
+        kelas: kelas,
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir,
+        tabelPengamatan: tableData
+      };
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai analisis header phishing, OpSec, dan kalkulasi matriks risiko.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali autentikasi SPF/DKIM dan penanganan malware.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi OpSec tree dan analisis email phishing.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      const statusKirimEl = document.getElementById('status-kirim-gas');
+      statusKirimEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-slate-600"></i> Mengirim data ke server guru...`;
+      document.getElementById('modal-result').classList.remove('hidden');
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil terkirim ke spreadsheet guru!`;
+      } catch (err) {
+        console.error("Gagal mengirim data via fetch:", err);
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-600"></i> Gagal otomatis via Fetch (Offline).`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function cetakLaporan() {
+      closeModal();
+      window.print();
+    }
+
+    function resetFormPrompt() {
+      showConfirm("Reset LKPD", "Apakah Anda yakin ingin meriset seluruh isian dan data praktikum LKPD 01 ini?", () => {
+        document.getElementById('sel-sekolah').value = "";
+        updateDropdownKelas();
+        tableData = [];
+        waktuMulai = 0;
+        renderTabelPengamatan();
+        document.getElementById('form-quiz').reset();
+        questionBank.forEach(q => {
+          const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+        });
+        document.getElementById('btn-download-pdf').classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("Reset Selesai", "Formulir telah dikembalikan ke kondisi awal.", "info");
+      });
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = "bg-slate-900 text-white border-slate-700";
+      let icon = "fa-circle-info text-slate-300";
+
+      toast.className = `p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-xs min-w-[260px] max-w-xs transition transform translate-y-2 opacity-0 pointer-events-auto ${bg}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <p class="font-bold mb-0.5">${title}</p>
+          <p class="text-slate-300 leading-tight">${message}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      modal.classList.remove('hidden');
+
+      const btnYes = document.getElementById('btn-confirm-yes');
+      const btnCancel = document.getElementById('btn-confirm-cancel');
+
+      const handleYes = () => { cleanup(); onConfirm(); };
+      const handleCancel = () => { cleanup(); };
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', handleYes);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnYes.addEventListener('click', handleYes);
+      btnCancel.addEventListener('click', handleCancel);
+    }
+
+    window.onload = function () {
+      initDatabaseSiswa();
+      renderQuiz();
+      selectEmail(0);
+      renderSim2Node(0);
+      selectRiskAsset(0);
+    };
+  </script>
+</body>
+</html>

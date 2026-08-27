@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 04: Kontrol Akses Jaringan & Keamanan Nirkabel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    @keyframes pulse-signal {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.05); }
+    }
+    .active-sequence-line {
+      stroke-dasharray: 8;
+      animation: dash 1s linear infinite;
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -16; }
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header Section -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-300">
+          <i class="fa-solid fa-wifi text-2xl text-slate-800"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 04: Kontrol Akses Jaringan & Keamanan Nirkabel</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Materi AAA, RADIUS/TACACS+, Captive Portal, Proteksi Wi-Fi (WPA2/WPA3 Enterprise & Rogue AP)[cite: 3]</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Harap pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul laboratorium praktikum Kontrol Akses & Keamanan Nirkabel.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Kontrol Akses & Keamanan Nirkabel -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Kerangka Kerja AAA, Enterprise Wi-Fi & RBAC
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">IEEE 802.1X & RFC 2865 RADIUS</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Keamanan akses jaringan modern mengandalkan arsitektur AAA (Authentication, Authorization, & Accounting)[cite: 3]. Proses otentikasi memverifikasi identitas pengguna, otorisasi menentukan hak akses yang diizinkan (misal: pengalokasian VLAN, rate-limit), dan accounting mencatat durasi serta konsumsi kuota data[cite: 3].
+        </p>
+
+        <!-- Access Control & Wireless Threat Comparison Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-shield-halved text-slate-700 mr-1.5"></i> Vektor Serangan Access Control & Keamanan Nirkabel</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Vektor Serangan</th>
+                  <th class="p-2.5 border-b border-slate-200">Dampak & Cara Kerja Serangan</th>
+                  <th class="p-2.5 border-b border-slate-200">Teknologi Mitigasi Standard</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Rogue AP / Evil Twin[cite: 3]</td>
+                  <td class="p-2.5">Penyerang menirukan SSID resmi untuk menjebak pengguna dan mencuri kredensial login[cite: 3].</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">WIPS (Wireless Intrusion Prevention System) & 802.1X[cite: 3]</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Credential Sniffing</td>
+                  <td class="p-2.5">Penyadapan kata sandi pada jaringan nirkabel terbuka (Open Wi-Fi / PSK terbagikan).</td>
+                  <td class="p-2.5 text-slate-700">WPA3 Enterprise (SAE & Enkripsi Individu)[cite: 3]</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Unauthorized Privilege Access[cite: 3]</td>
+                  <td class="p-2.5">Pengguna biasa/staf magang mengeksekusi perintah konfigurasi kritis pada router[cite: 3].</td>
+                  <td class="p-2.5 font-semibold text-emerald-800">Role-Based Access Control (RBAC) & TACACS+[cite: 3]</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Captive Portal Bypass</td>
+                  <td class="p-2.5">Eksploitasi IP/MAC Passthrough untuk melewati tembok otentikasi Hotspot[cite: 3].</td>
+                  <td class="p-2.5 font-semibold text-slate-800">RADIUS Dynamic Authorization / CoA (Change of Authorization)[cite: 3]</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-server text-slate-700"></i> Protokol Otentikasi Terpusat (RADIUS vs TACACS+)[cite: 3]
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              <b>1. RADIUS (RFC 2865):</b> Menggabungkan AuthN & AuthZ, menggunakan UDP port 1812/1813, hanya mengenkripsi kata sandi[cite: 3].<br>
+              <b>2. TACACS+:</b> Memisahkan AAA secara independen, menggunakan TCP port 49, mengenkripsi seluruh muatan paket data[cite: 3].
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-calculator text-slate-700"></i> Kalkulasi Turunan Kunci 4-Way Handshake[cite: 3]
+            </h4>
+            <p class="text-slate-600 leading-relaxed">
+              $$\text{PTK} = \text{PRF-512}\left(\text{PMK}, \text{"Pairwise key expansion"}, \text{Min/Max}(AA, SPA), \text{Min/Max}(ANonce, SNonce)\right)$$
+              Kunci PTK dihasilkan secara independen di Client dan AP tanpa mentransmisikan PSK asli melalui gelombang udara[cite: 3].
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Kontrol Akses & Keamanan Nirkabel
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Uji coba AAA Flow, Deteksi Rogue AP, Analisis 4-Way Handshake, dan Konfigurasi Matriks RBAC[cite: 3].</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Studio Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 13: AAA Flow & Captive Portal Login -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-mobile-screen-button text-slate-800"></i> Simulasi 13: AAA Flow & Captive Portal Login[cite: 3]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">RADIUS Authentication[cite: 3]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Pelajari alur interaksi Client $\rightarrow$ Router (NAS) $\rightarrow$ Server RADIUS dalam memverifikasi otentikasi Captive Portal[cite: 3].</p>
+
+              <!-- Split Screen Layout -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3">
+                <!-- Smartphone UI (Left) -->
+                <div class="sm:col-span-5 border-2 border-slate-800 rounded-2xl p-3 bg-slate-900 text-white shadow-md flex flex-col justify-between">
+                  <div>
+                    <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-2"></div>
+                    <div class="bg-white text-slate-900 rounded-xl p-3 text-center">
+                      <div class="text-[10px] font-bold uppercase text-slate-400">Wi-Fi Hotspot Login</div>
+                      <i class="fa-solid fa-wifi text-slate-800 text-lg my-1"></i>
+                      <div class="space-y-2 mt-2">
+                        <input type="text" id="sim13-user" placeholder="Username" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 outline-none" value="siswa_top">
+                        <input type="password" id="sim13-pass" placeholder="Password" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 outline-none" value="pass123">
+                        <button onclick="executeAAAFlow()" class="w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded text-xs transition">
+                          [ Login ]
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-2 text-[9px] text-slate-400 text-center font-mono" id="sim13-phone-status">
+                    Status: Isolated by Firewall
+                  </div>
+                </div>
+
+                <!-- Sequence Diagram Visualizer (Right) -->
+                <div class="sm:col-span-7 bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between text-xs">
+                  <div class="font-bold text-slate-800 text-[11px] border-b border-slate-200 pb-1 mb-2">
+                    Sequence Transaction Diagram
+                  </div>
+                  <div class="space-y-2 font-mono text-[10px]">
+                    <div class="flex justify-between items-center text-slate-500 text-[9px] font-bold">
+                      <span>CLIENT</span>
+                      <span>ROUTER (NAS)</span>
+                      <span>RADIUS SERVER</span>
+                    </div>
+                    <div id="seq-step-1" class="p-1 rounded bg-white border border-slate-200 text-slate-600 transition">
+                      1. HTTP GET $\rightarrow$ Redirect Captive Portal[cite: 3]
+                    </div>
+                    <div id="seq-step-2" class="p-1 rounded bg-white border border-slate-200 text-slate-600 transition">
+                      2. Access-Request (User/Pass) $\rightarrow$ RADIUS[cite: 3]
+                    </div>
+                    <div id="seq-step-3" class="p-1 rounded bg-white border border-slate-200 text-slate-600 transition">
+                      3. RADIUS Database Matching[cite: 3]
+                    </div>
+                    <div id="seq-step-4" class="p-1 rounded bg-white border border-slate-200 text-slate-600 transition">
+                      4. Access-Accept / Reject $\rightarrow$ NAS[cite: 3]
+                    </div>
+                    <div id="seq-step-5" class="p-1 rounded bg-white border border-slate-200 text-slate-600 transition">
+                      5. Accounting-Start Packet[cite: 3]
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AAA Log Panel (Bottom) -->
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-[10px] text-white space-y-1 mb-3">
+                <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-1">
+                  <span>AAA RADIUS PACKET LOG PANEL[cite: 3]</span>
+                  <span id="aaa-session-status" class="text-amber-400 font-bold">DISCONNECTED</span>
+                </div>
+                <div id="aaa-log-box" class="h-12 overflow-y-auto space-y-0.5 text-slate-300">
+                  <div class="text-slate-500">[INFO] Ready for user authentication...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji login valid vs expired/salah[cite: 3].</span>
+              <button onclick="catatSimulasi(13)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 14: Rogue Access Point Detector -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-tower-cell text-slate-800"></i> Simulasi 14: Rogue Access Point Detector[cite: 3]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Evil Twin Mitigation[cite: 3]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Analisis karakteristik sinyal Wi-Fi untuk mendeteksi AP ilegal yang menirukan Identitas Jaringan (SSID) resmi[cite: 3].</p>
+
+              <!-- Wi-Fi Audit & Spectrum View -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-3">
+                <div class="flex justify-between items-center">
+                  <button onclick="scanWifiNetworks()" class="py-1.5 px-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] transition">
+                    <i class="fa-solid fa-radar mr-1"></i> Pindai Frekuensi Wi-Fi[cite: 3]
+                  </button>
+                  <span id="scan-state-badge" class="text-[9px] font-mono bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded border border-slate-200">SCAN IDLE</span>
+                </div>
+
+                <!-- Audit Table -->
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-[10px] border-collapse font-mono">
+                    <thead>
+                      <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                        <th class="p-1.5">SSID</th>
+                        <th class="p-1.5">BSSID / MAC</th>
+                        <th class="p-1.5">Ch</th>
+                        <th class="p-1.5">Keamanan</th>
+                        <th class="p-1.5">Sinyal</th>
+                        <th class="p-1.5">Vendor OUI</th>
+                      </tr>
+                    </thead>
+                    <tbody id="wifi-scan-table-body" class="divide-y divide-slate-100 bg-white">
+                      <tr>
+                        <td colspan="6" class="p-3 text-center text-slate-400 italic font-sans">Klik 'Pindai Frekuensi Wi-Fi' untuk mulai pemindaian audit sinyal[cite: 3].</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Action Controls Panel -->
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
+                  <button onclick="markAuthorizedAP()" id="btn-mark-auth" class="py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition" disabled>
+                    [ Mark as Authorized ][cite: 3]
+                  </button>
+                  <button onclick="containRogueAP()" id="btn-contain-rogue" class="py-1.5 bg-rose-700 hover:bg-rose-600 text-white font-bold rounded-lg text-[10px] transition" disabled>
+                    [ Isolate / Contain Rogue AP ][cite: 3]
+                  </button>
+                </div>
+              </div>
+
+              <div id="wips-status-box" class="bg-slate-100 border border-slate-300 rounded-xl p-2.5 font-mono text-[10px] text-slate-700 h-10 overflow-y-auto">
+                WIPS System: Menunggu instruksi pemindaian...[cite: 3]
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-3">
+              <span class="text-slate-600 font-medium text-[11px]">Identifikasi discrepancy BSSID & WPA3 vs WPA2[cite: 3].</span>
+              <button onclick="catatSimulasi(14)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 15: Wi-Fi Handshake & Encryption Analyzer -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-key text-slate-800"></i> Simulasi 15: 4-Way Handshake Analyzer[cite: 3]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">WPA2/WPA3 Key Derivation[cite: 3]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Memahami pertukaran 4-Way Handshake tanpa mentransmisikan Pre-Shared Key (PSK) asli melalui gelombang udara[cite: 3].</p>
+
+              <!-- Sequence Diagram 4 Steps -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs space-y-2">
+                <div class="flex justify-between font-mono font-bold text-[10px] text-slate-500 border-b border-slate-200 pb-1">
+                  <span>CLIENT (STATION)</span>
+                  <span>AUTHENTICATOR (ACCESS POINT)</span>
+                </div>
+
+                <div class="space-y-1 text-[10px] font-mono">
+                  <button onclick="stepHandshake(1)" id="hs-btn-1" class="w-full text-left p-1.5 rounded border border-slate-200 hover:border-slate-400 bg-slate-50 transition">
+                    <b>Message 1:</b> AP $\rightarrow$ Client (Mengirim ANonce)[cite: 3]
+                  </button>
+                  <button onclick="stepHandshake(2)" id="hs-btn-2" class="w-full text-left p-1.5 rounded border border-slate-200 hover:border-slate-400 bg-slate-50 transition" disabled>
+                    <b>Message 2:</b> Client $\rightarrow$ AP (Mengirim SNonce + MIC)[cite: 3]
+                  </button>
+                  <button onclick="stepHandshake(3)" id="hs-btn-3" class="w-full text-left p-1.5 rounded border border-slate-200 hover:border-slate-400 bg-slate-50 transition" disabled>
+                    <b>Message 3:</b> AP $\rightarrow$ Client (Mengirim GTK + MIC)[cite: 3]
+                  </button>
+                  <button onclick="stepHandshake(4)" id="hs-btn-4" class="w-full text-left p-1.5 rounded border border-slate-200 hover:border-slate-400 bg-slate-50 transition" disabled>
+                    <b>Message 4:</b> Client $\rightarrow$ AP (Konfirmasi Ack)[cite: 3]
+                  </button>
+                </div>
+              </div>
+
+              <!-- Panel Kalkulator Kunci Samping -->
+              <div class="bg-slate-900 rounded-xl p-2.5 font-mono text-[10px] text-white space-y-1 mb-3">
+                <div class="flex justify-between border-b border-slate-800 pb-1 text-slate-400 font-bold">
+                  <span>KEY DERIVATION CALCULATOR PANEL[cite: 3]</span>
+                  <span id="mic-val-status" class="text-amber-400">UNVERIFIED</span>
+                </div>
+                <div class="space-y-0.5 text-slate-300">
+                  <p>PMK (Pairwise Master Key) : <span id="key-pmk-val" class="text-slate-500">[ Generated from Passphrase ]</span></p>
+                  <p>ANonce / SNonce Values    : <span id="key-nonces-val" class="text-slate-500">[ Pending exchange ]</span></p>
+                  <p>Derived PTK (Session Key)  : <span id="key-ptk-val" class="text-slate-500">[ Not Derived ]</span></p>
+                  <p>MIC Integrity Check       : <span id="key-mic-check" class="text-slate-500">[ Pending Message 2 ]</span></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Klik pesan 1 $\rightarrow$ 4 secara berurutan[cite: 3].</span>
+              <button onclick="catatSimulasi(15)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 16: User Privilege Access Control (RBAC) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-user-gear text-slate-800"></i> Simulasi 16: User Privilege Control (RBAC)[cite: 3]
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Least Privilege Principle[cite: 3]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Atur hak akses berbasis peran (Role-Based Access Control) pada OS router/server[cite: 3].</p>
+
+              <!-- Matrix Authorization & CLI Split -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 text-xs">
+                <!-- Authorization Matrix (Left) -->
+                <div class="sm:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-2">
+                  <span class="font-bold text-slate-900 text-[11px] block border-b border-slate-200 pb-1">Matriks Peran (GuestIntern)[cite: 3]</span>
+                  <div class="space-y-1.5 text-[10px]">
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-700">View Logs / Status:</span>
+                      <div class="flex gap-1">
+                        <label class="font-mono"><input type="checkbox" id="rb-log-r" checked disabled> R</label>
+                        <label class="font-mono"><input type="checkbox" id="rb-log-w" onchange="updateRBACMatrix()"> W</label>
+                      </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-700">IP Address Config:</span>
+                      <div class="flex gap-1">
+                        <label class="font-mono"><input type="checkbox" id="rb-ip-r" checked onchange="updateRBACMatrix()"> R</label>
+                        <label class="font-mono"><input type="checkbox" id="rb-ip-w" onchange="updateRBACMatrix()"> W</label>
+                      </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-700">Firewall Rules:</span>
+                      <div class="flex gap-1">
+                        <label class="font-mono"><input type="checkbox" id="rb-fw-r" checked onchange="updateRBACMatrix()"> R</label>
+                        <label class="font-mono"><input type="checkbox" id="rb-fw-w" onchange="updateRBACMatrix()"> W</label>
+                      </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-700">System Reboot:</span>
+                      <div class="flex gap-1">
+                        <label class="font-mono"><input type="checkbox" id="rb-reboot-x" onchange="updateRBACMatrix()"> X</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CLI Terminal Test Console (Right) -->
+                <div class="sm:col-span-6 bg-slate-900 text-white rounded-xl p-2.5 font-mono text-[10px] flex flex-col justify-between">
+                  <div>
+                    <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-1 mb-2">
+                      <span>CLI TERMINAL</span>
+                      <span class="text-emerald-400">USER: staf_magang</span>
+                    </div>
+                    <div class="space-y-1 mb-2">
+                      <button onclick="runCLICommand('read')" class="w-full text-left bg-slate-800 hover:bg-slate-700 text-slate-200 p-1 rounded">
+                        $ show ip interface brief
+                      </button>
+                      <button onclick="runCLICommand('write_ip')" class="w-full text-left bg-slate-800 hover:bg-slate-700 text-slate-200 p-1 rounded">
+                        $ ip address add 192.168.10.1/24 ether1
+                      </button>
+                      <button onclick="runCLICommand('reboot')" class="w-full text-left bg-slate-800 hover:bg-slate-700 text-slate-200 p-1 rounded">
+                        $ system reboot
+                      </button>
+                    </div>
+                  </div>
+                  <div id="cli-output-box" class="p-1.5 bg-slate-950 rounded border border-slate-800 text-emerald-400 h-12 overflow-y-auto leading-tight">
+                    RouterOS v7.12 ready...
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span class="text-slate-600 font-medium text-[11px]">Uji izin eksekusi perintah staf magang[cite: 3].</span>
+              <button onclick="catatSimulasi(16)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Keamanan Nirkabel & AAA
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Catatan log eksperimen yang direkap secara otomatis dari modul laboratorium simulasi di atas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Parameter Konfigurasi / Pengujian</th>
+                <th class="px-4 py-3">Hasil / Pengukuran Kinerja</th>
+                <th class="px-4 py-3">Status Evaluasi Keamanan</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi AAA & Wireless Security
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman teori dan praktikum Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+          <button id="btn-download-pdf" onclick="cetakLaporan()" class="hidden flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Cetak / Unduh PDF
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-slate-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD 04 Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil dikirim ke server guru.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+          <button onclick="cetakLaporan()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-pdf"></i> Cetak Laporan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-slate-300">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-slate-900 text-base mb-1" id="confirm-title">Konfirmasi Tindakan</h4>
+      <p class="text-xs text-slate-600 mb-5" id="confirm-message">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      <div class="flex gap-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-yes" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxboGD7aLjCK4HDBMY95-L-xvbl13FeADOpiq3LiP4t9qDVfXa_BTfK9CTvVq30k3zM/exec"; 
+    let waktuMulai = 0;
+    let masterDataSiswa = [];
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      masterDataSiswa = [];
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          masterDataSiswa.push({ sekolah, kelas, nama });
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.createElement('option');
+          opt.value = nama;
+          opt.textContent = nama;
+          selNama.appendChild(opt);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-800 font-medium px-3 py-1 rounded-full border border-slate-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // Question Bank: 20 Items for Modul 4 (AAA, RADIUS, Rogue AP, 4-Way Handshake, RBAC)
+    const questionBank = [
+      { id: 1, q: "Kerangka kerja keamanan jaringan yang menangani Authentication, Authorization, dan Accounting dinamakan...", options: ["A. AAA Framework", "B. OSI Model", "C. TCP/IP Stack", "D. IEEE 802.1Q", "E. WPA3 Personal"], ans: "A" },
+      { id: 2, q: "Protokol otentikasi terpusat berbasis UDP port 1812/1813 yang menggabungkan otentikasi dan otorisasi dinamakan...", options: ["A. TACACS+", "B. RADIUS", "C. LDAP", "D. SNMP", "E. NTP"], ans: "B" },
+      { id: 3, q: "Perbedaan mendasar antara RADIUS dan TACACS+ terletak pada enkripsi data dan transport layer, yaitu...", options: ["A. RADIUS enkripsi seluruh paket (UDP), TACACS+ hanya enkripsi kata sandi (TCP)", "B. RADIUS berbasis UDP & enkripsi kata sandi, TACACS+ berbasis TCP & enkripsi seluruh paket", "C. RADIUS memisahkan fungsi AAA, TACACS+ menggabungkan AAA", "D. RADIUS hanya untuk koneksi kabel, TACACS+ hanya untuk Wi-Fi", "E. RADIUS tidak mendukung accounting"], ans: "B" },
+      { id: 4, q: "Layar halaman login otomatis yang mencegat lalu lintas web pengguna sebelum diizinkan mengakses internet dinamakan...", options: ["A. Firewall Filter", "B. Captive Portal", "C. Proxy Server", "D. Port Security", "E. VPN Client"], ans: "B" },
+      { id: 5, q: "Dalam arsitektur AAA RADIUS, paket yang dikirim oleh Router (NAS) ke RADIUS Server saat pengguna memasukkan username & password adalah...", options: ["A. Access-Accept", "B. Access-Request", "C. Access-Reject", "D. Accounting-Start", "E. Access-Challenge"], ans: "B" },
+      { id: 6, q: "Paket RADIUS yang dikirimkan server untuk menyetujui akses pengguna beserta atribut parameter (misal Rate-Limit & Session-Timeout) adalah...", options: ["A. Access-Reject", "B. Access-Accept", "C. Accounting-Stop", "D. Access-Request", "E. EAP-Failure"], ans: "B" },
+      { id: 7, q: "Paket RADIUS Accounting yang berfungsi untuk mulai mencatat durasi dan volume data sesi pengguna adalah...", options: ["A. Accounting-Start", "B. Accounting-Stop", "C. Interim-Update", "D. Access-Accept", "E. Access-Request"], ans: "A" },
+      { id: 8, q: "Access Point buatan peretas yang menirukan nama SSID resmi perusahaan/sekolah untuk mencuri kredensial dinamakan...", options: ["A. Stealth AP", "B. Rogue AP / Evil Twin", "C. Bridge AP", "D. Repeaters", "E. Managed Switch"], ans: "B" },
+      { id: 9, q: "Parameter pembeda paling efektif untuk mendeteksi Rogue AP / Evil Twin dari AP Resmi adalah...", options: ["A. Nama SSID yang sama", "B. BSSID (MAC Address), Vendor OUI, dan Standar Keamanan (WPA3 Enterprise vs WPA2 Personal)", "C. Nama lokasi SSID", "D. Kapasitas baterai router", "E. Jumlah sinyal antena"], ans: "B" },
+      { id: 10, q: "Fitur keamanan nirkabel yang otomatis memancarkan frame Deauthentication ke AP ilegal dinamakan...", options: ["A. WIPS (Wireless Intrusion Prevention System)", "B. WPA2-Personal", "C. WPS Pin", "D. Captive Portal Bypass", "E. DHCP Snooping"], ans: "A" },
+      { id: 11, q: "Tujuan utama dari mekanisme pertukaran 4-Way Handshake pada protokol WPA2/WPA3 adalah...", options: ["A. Transmisi kata sandi Wi-Fi secara rinci melalui udara", "B. Menghasilkan kunci enkripsi sesi PTK tanpa mengirim kata sandi asli (PSK) melalui udara", "C. Mempercepat koneksi bandwidth internet", "D. Mengubah IP address client secara dinamis", "E. Menghapus tabel ARP pada Access Point"], ans: "B" },
+      { id: 12, q: "Kunci utama turunan dari SSID dan Kata Sandi Wi-Fi yang digunakan sebagai dasar pembuatan PTK dinamakan...", options: ["A. Pairwise Master Key (PMK)", "B. Group Temporal Key (GTK)", "C. Access Token", "D. Certificate Key", "E. RADIUS Secret"], ans: "A" },
+      { id: 13, q: "Nilai acak (Random Nonce) yang dihasilkan oleh Access Point pada Message 1 dalam 4-Way Handshake dinamakan...", options: ["A. SNonce", "B. ANonce", "C. MIC", "D. GTK", "E. Master Key"], ans: "B" },
+      { id: 14, q: "Nilai acak (Random Nonce) yang dihasilkan oleh Client (Station) pada Message 2 dalam 4-Way Handshake dinamakan...", options: ["A. ANonce", "B. SNonce", "C. GTK", "D. RADIUS Key", "E. Session Cookie"], ans: "B" },
+      { id: 15, q: "Kode verifikasi integritas yang membuktikan kedua belah pihak memiliki kata sandi yang sama tanpa menukarkannya langsung dinamakan...", options: ["A. Message Integrity Code (MIC)", "B. Public Key Encryption", "C. SHA-256 Hash", "D. MAC Address", "E. CRC Checksum"], ans: "A" },
+      { id: 16, q: "Pesan dalam 4-Way Handshake yang mengirimkan Group Temporal Key (GTK) untuk lalu lintas multicast/broadcast adalah...", options: ["A. Message 1", "B. Message 2", "C. Message 3", "D. Message 4", "E. Message 5"], ans: "C" },
+      { id: 17, q: "Prinsip otorisasi di mana pengguna hanya diberikan hak akses minimal yang dibutuhkan untuk tugas jabatannya dinamakan...", options: ["A. Principle of Least Privilege", "B. Open Access Control", "C. Full Administrative Access", "D. Mandatory Access Control", "E. Promiscuous Privileges"], ans: "A" },
+      { id: 18, q: "Skema pengaturan hak akses pengguna berbasis peran atau jabatan (seperti SuperAdmin, Operator, Intern) dinamakan...", options: ["A. Dynamic Routing", "B. Role-Based Access Control (RBAC)", "C. Port Mirroring", "D. Static Tagging", "E. MAC Spoofing"], ans: "B" },
+      { id: 19, q: "Jika pengguna berkedudukan 'GuestIntern' dibatasi hanya izin Read (R) pada modul Firewall, respon CLI saat mencoba mengubah rule adalah...", options: ["A. Command executed successfully", "B. Permission Denied / Access Restricted", "C. System Rebooting", "D. Password Changed", "E. Port Shutdown"], ans: "B" },
+      { id: 20, q: "Respon RADIUS Server jika pengguna memasukkan kata sandi yang salah atau akun telah kedaluwarsa adalah...", options: ["A. Access-Accept", "B. Access-Challenge", "C. Access-Reject", "D. Accounting-Start", "E. EAP-Success"], ans: "C" }
+    ];
+
+    // --- SIMULASI 13: AAA FLOW & CAPTIVE PORTAL LOGIC ---
+    let aaaSessionState = 'disconnected';
+
+    function executeAAAFlow() {
+      const user = document.getElementById('sim13-user').value.trim();
+      const pass = document.getElementById('sim13-pass').value.trim();
+      const logBox = document.getElementById('aaa-log-box');
+      const phoneStatus = document.getElementById('sim13-phone-status');
+      const statusBadge = document.getElementById('aaa-session-status');
+
+      // Reset sequence highlighting
+      for(let i=1; i<=5; i++) {
+        document.getElementById(`seq-step-${i}`).className = "p-1 rounded bg-white border border-slate-200 text-slate-600 transition";
+      }
+
+      logAAA("[1] HTTP GET request from Client -> NAS Router (Redirected to Captive Portal)");
+      document.getElementById('seq-step-1').className = "p-1 rounded bg-amber-100 border border-amber-400 font-bold text-slate-900 transition";
+
+      setTimeout(() => {
+        logAAA(`[2] NAS sending RADIUS Access-Request (User: ${user}) -> RADIUS Server:1812`);
+        document.getElementById('seq-step-2').className = "p-1 rounded bg-amber-100 border border-amber-400 font-bold text-slate-900 transition";
+      }, 600);
+
+      setTimeout(() => {
+        logAAA("[3] RADIUS Server matching user credentials in Database...");
+        document.getElementById('seq-step-3').className = "p-1 rounded bg-amber-100 border border-amber-400 font-bold text-slate-900 transition";
+
+        if (user === "siswa_top" && pass === "pass123") {
+          setTimeout(() => {
+            logAAA("[4] RADIUS -> NAS: Access-Accept (Attr: Rate-Limit=5Mbps, Session-Timeout=3600s)");
+            document.getElementById('seq-step-4').className = "p-1 rounded bg-emerald-100 border border-emerald-400 font-bold text-emerald-900 transition";
+            phoneStatus.innerText = "Status: Authenticated (Firewall Bypassed)";
+            phoneStatus.className = "mt-2 text-[9px] text-emerald-400 text-center font-mono font-bold";
+            statusBadge.innerText = "AUTHENTICATED";
+            statusBadge.className = "text-emerald-400 font-bold";
+            aaaSessionState = 'authenticated';
+
+            setTimeout(() => {
+              logAAA("[5] NAS -> RADIUS: Accounting-Start packet sent (Session ID: #AAA-8821)");
+              document.getElementById('seq-step-5').className = "p-1 rounded bg-emerald-100 border border-emerald-400 font-bold text-emerald-900 transition";
+              showToast("AAA Success", "Access-Accept diterima! Firewall bypass & Accounting-Start aktif.", "success");
+            }, 500);
+          }, 600);
+        } else if (user === "user_expired") {
+          setTimeout(() => {
+            logAAA("[4] RADIUS -> NAS: Access-Reject (Reason: Account Expired / Subscription Ended)");
+            document.getElementById('seq-step-4').className = "p-1 rounded bg-rose-100 border border-rose-400 font-bold text-rose-900 transition";
+            phoneStatus.innerText = "Status: Rejected (Account Expired)";
+            phoneStatus.className = "mt-2 text-[9px] text-rose-400 text-center font-mono font-bold";
+            statusBadge.innerText = "ACCESS REJECTED";
+            statusBadge.className = "text-rose-400 font-bold";
+            aaaSessionState = 'rejected_expired';
+            showToast("AAA Rejected", "Access-Reject: Akun sudah kedaluwarsa!", "warning");
+          }, 600);
+        } else {
+          setTimeout(() => {
+            logAAA("[4] RADIUS -> NAS: Access-Reject (Reason: Invalid Credentials)");
+            document.getElementById('seq-step-4').className = "p-1 rounded bg-rose-100 border border-rose-400 font-bold text-rose-900 transition";
+            phoneStatus.innerText = "Status: Rejected (Wrong User/Password)";
+            phoneStatus.className = "mt-2 text-[9px] text-rose-400 text-center font-mono font-bold";
+            statusBadge.innerText = "ACCESS REJECTED";
+            statusBadge.className = "text-rose-400 font-bold";
+            aaaSessionState = 'rejected_invalid';
+            showToast("AAA Rejected", "Access-Reject: Username atau Password salah!", "warning");
+          }, 600);
+        }
+      }, 1200);
+    }
+
+    function logAAA(msg) {
+      const box = document.getElementById('aaa-log-box');
+      box.innerHTML = `<div>${msg}</div>` + box.innerHTML;
+    }
+
+
+    // --- SIMULASI 14: ROGUE AP DETECTOR LOGIC ---
+    let wifiScanState = 'idle';
+    let rogueMitigated = false;
+
+    function scanWifiNetworks() {
+      wifiScanState = 'scanned';
+      document.getElementById('scan-state-badge').innerText = "SCAN COMPLETE";
+      document.getElementById('scan-state-badge').className = "text-[9px] font-mono bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-200";
+
+      const tbody = document.getElementById('wifi-scan-table-body');
+      tbody.innerHTML = `
+        <tr class="bg-white hover:bg-slate-50 border-b border-slate-100">
+          <td class="p-1.5 font-bold text-slate-900">Wi-Fi_Sekolah_Utama</td>
+          <td class="p-1.5 text-slate-600">AA:BB:CC:11:22:33</td>
+          <td class="p-1.5">6</td>
+          <td class="p-1.5 font-semibold text-emerald-800">WPA3-Enterprise</td>
+          <td class="p-1.5 text-slate-600">-65 dBm</td>
+          <td class="p-1.5 text-slate-700">Cisco Systems Inc.</td>
+        </tr>
+        <tr class="bg-rose-50/50 hover:bg-rose-50 border-b border-slate-100">
+          <td class="p-1.5 font-bold text-rose-900">Wi-Fi_Sekolah_Utama (Evil Twin)</td>
+          <td class="p-1.5 text-rose-700 font-bold">12:34:56:78:9A:BC</td>
+          <td class="p-1.5">6</td>
+          <td class="p-1.5 font-bold text-rose-700">WPA2-Personal (Abnormal)</td>
+          <td class="p-1.5 text-rose-700 font-bold">-35 dBm (Very Strong)</td>
+          <td class="p-1.5 text-rose-800">Unassigned / Cheap OUI</td>
+        </tr>
+      `;
+
+      document.getElementById('btn-mark-auth').disabled = false;
+      document.getElementById('btn-contain-rogue').disabled = false;
+      document.getElementById('wips-status-box').innerText = "[ALERT] Terdeteksi 2 Access Point dengan SSID sama! AP 2 memiliki BSSID mencurigakan dan enkripsi WPA2-Personal.";
+      showToast("Pemindaian Selesai", "Terdeteksi Evil Twin AP yang menirukan SSID resmi sekolah!", "warning");
+    }
+
+    function markAuthorizedAP() {
+      showToast("Authorized", "AP 1 (Cisco) terverifikasi sebagai infrastruktur resmi.", "info");
+    }
+
+    function containRogueAP() {
+      rogueMitigated = true;
+      const box = document.getElementById('wips-status-box');
+      box.innerHTML = `<span class="text-rose-600 font-bold">[WIPS ACTIVE] Mengirimkan frame Deauthentication otomatis ke BSSID 12:34:56:78:9A:BC! Perangkat pengguna terisolasi dari AP Palsu.</span>`;
+      showToast("WIPS Activated", "Paket Deauthentication dikirim! Rogue AP berhasil diisolasi.", "success");
+    }
+
+
+    // --- SIMULASI 15: 4-WAY HANDSHAKE LOGIC ---
+    let hsStep = 0;
+
+    function stepHandshake(step) {
+      const pmkEl = document.getElementById('key-pmk-val');
+      const noncesEl = document.getElementById('key-nonces-val');
+      const ptkEl = document.getElementById('key-ptk-val');
+      const micEl = document.getElementById('key-mic-check');
+      const micStatus = document.getElementById('mic-val-status');
+
+      if (step === 1) {
+        hsStep = 1;
+        document.getElementById('hs-btn-1').className = "w-full text-left p-1.5 rounded border border-emerald-500 bg-emerald-50 font-bold transition";
+        document.getElementById('hs-btn-2').disabled = false;
+        pmkEl.innerText = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+        noncesEl.innerText = "ANonce: a7f93b88... (Received from AP)";
+        showToast("Step 1 Complete", "Message 1 (ANonce) dikirim oleh AP ke Client.", "info");
+      } else if (step === 2) {
+        hsStep = 2;
+        document.getElementById('hs-btn-2').className = "w-full text-left p-1.5 rounded border border-emerald-500 bg-emerald-50 font-bold transition";
+        document.getElementById('hs-btn-3').disabled = false;
+        noncesEl.innerText = "ANonce: a7f93b88... | SNonce: 4c2e1199...";
+        ptkEl.innerText = "8d92a15f00287114b3d9... (Calculated via PRF-512)";
+        micEl.innerText = "MIC Computed by Client & Verified";
+        micStatus.innerText = "MIC VALIDATED ✓";
+        micStatus.className = "text-emerald-400 font-bold";
+        showToast("Step 2 Complete", "Message 2 (SNonce + MIC) dikirim oleh Client.", "info");
+      } else if (step === 3) {
+        hsStep = 3;
+        document.getElementById('hs-btn-3').className = "w-full text-left p-1.5 rounded border border-emerald-500 bg-emerald-50 font-bold transition";
+        document.getElementById('hs-btn-4').disabled = false;
+        showToast("Step 3 Complete", "Message 3 (GTK + MIC) dikirim oleh AP ke Client.", "info");
+      } else if (step === 4) {
+        hsStep = 4;
+        document.getElementById('hs-btn-4').className = "w-full text-left p-1.5 rounded border border-emerald-500 bg-emerald-50 font-bold transition";
+        showToast("Handshake Complete", "4-Way Handshake Berhasil! Sesi terenkripsi aman.", "success");
+      }
+    }
+
+
+    // --- SIMULASI 16: RBAC LOGIC ---
+    let rbacConfig = {
+      ip_write: false,
+      fw_write: false,
+      reboot_exec: false
+    };
+
+    function updateRBACMatrix() {
+      rbacConfig.ip_write = document.getElementById('rb-ip-w').checked;
+      rbacConfig.fw_write = document.getElementById('rb-fw-w').checked;
+      rbacConfig.reboot_exec = document.getElementById('rb-reboot-x').checked;
+      showToast("RBAC Updated", "Matriks otorisasi peran GuestIntern diperbarui.", "info");
+    }
+
+    function runCLICommand(type) {
+      const box = document.getElementById('cli-output-box');
+
+      if (type === 'read') {
+        box.innerHTML = `<span class="text-emerald-400"># show ip interface brief<br>ether1: 192.168.1.10/24 (UP)<br>wlan1: 10.10.0.1/22 (UP) [Access Granted]</span>`;
+      } else if (type === 'write_ip') {
+        if (rbacConfig.ip_write) {
+          box.innerHTML = `<span class="text-emerald-400"># ip address add 192.168.10.1/24 interface ether1<br>IP address assigned successfully.</span>`;
+        } else {
+          box.innerHTML = `<span class="text-rose-400"># ip address add 192.168.10.1/24 interface ether1<br>ERROR: Permission Denied! User role 'GuestIntern' lacks Write privilege on IP Config.</span>`;
+        }
+      } else if (type === 'reboot') {
+        if (rbacConfig.reboot_exec) {
+          box.innerHTML = `<span class="text-emerald-400"># system reboot<br>System rebooting now...</span>`;
+        } else {
+          box.innerHTML = `<span class="text-rose-400"># system reboot<br>ERROR: Access Restricted! Execution privilege required for System Reboot.</span>`;
+        }
+      }
+    }
+
+
+    // RECORD SIMULATION LOGS
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 13) {
+        logEntry = {
+          modul: "Simulasi 13: AAA Flow & Captive Portal Login",
+          param: `User: ${document.getElementById('sim13-user').value}`,
+          hasil: aaaSessionState === 'authenticated' ? "Access-Accept (Rate-Limit 5Mbps, Accounting-Start)" : "Access-Reject (Firewall Blocked)",
+          status: aaaSessionState === 'authenticated' ? "PASS (Authenticated)" : "REJECTED"
+        };
+      } else if (simNum === 14) {
+        logEntry = {
+          modul: "Simulasi 14: Rogue AP Detector",
+          param: `Scan State: ${wifiScanState}`,
+          hasil: rogueMitigated ? "Rogue AP Contained via WIPS Deauth Frames" : "Evil Twin AP Detected (WPA2 vs WPA3 Discrepancy)",
+          status: rogueMitigated ? "PASS (Mitigated)" : "ALERT (Rogue Active)"
+        };
+      } else if (simNum === 15) {
+        logEntry = {
+          modul: "Simulasi 15: 4-Way Handshake Analyzer",
+          param: `Completed Step: ${hsStep} of 4`,
+          hasil: hsStep === 4 ? "PTK Derived & MIC Integrity Verified (PSK safe)" : `Handshake incomplete (Step ${hsStep})`,
+          status: hsStep === 4 ? "PASS (Handshake Complete)" : "INCOMPLETE"
+        };
+      } else if (simNum === 16) {
+        const permitState = (!rbacConfig.ip_write && !rbacConfig.reboot_exec) ? "Least Privilege Applied" : "Excessive Privileges Allowed";
+        logEntry = {
+          modul: "Simulasi 16: User Privilege Control (RBAC)",
+          param: `GuestIntern Perms: IP_W=${rbacConfig.ip_write}, Reboot_X=${rbacConfig.reboot_exec}`,
+          hasil: permitState,
+          status: (!rbacConfig.ip_write && !rbacConfig.reboot_exec) ? "PASS (Secure RBAC)" : "RISK (Over-Privileged)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum berhasil disimpan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada salah satu modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
+        if (row.status.includes("RISK") || row.status.includes("ALERT") || row.status.includes("REJECTED")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+        if (row.status.includes("PASS")) badgeColor = "bg-emerald-50 text-emerald-800 border border-emerald-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Parameter Konfigurasi,Hasil Pengukuran,Status Evaluasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "AAA_Wireless_Security_LKPD04_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBank.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-slate-900">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let skorBenar = 0;
+      questionBank.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden', 'bg-slate-100', 'text-slate-800');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-slate-800 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.classList.add('bg-slate-100', 'text-slate-800', 'border', 'border-slate-300');
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-800 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBank.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+      const pilihanLkpdTerpilih = "LKPD 04: Kontrol Akses Jaringan & Keamanan Nirkabel";
+
+      const payload = {
+        sekolah: sekolah,
+        nama_lengkap: nama,
+        pilihan_lkpd: pilihanLkpdTerpilih,
+        kelas: kelas,
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir,
+        tabelPengamatan: tableData
+      };
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai kerangka kerja AAA RADIUS, mitigasi Rogue AP, 4-Way Handshake, dan RBAC.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali perbedaan RADIUS vs TACACS+ dan turunan kunci PMK/PTK.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi Captive Portal AAA Flow dan penentuan WIPS Deauthentication.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      const statusKirimEl = document.getElementById('status-kirim-gas');
+      statusKirimEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-slate-600"></i> Mengirim data ke server guru...`;
+      document.getElementById('modal-result').classList.remove('hidden');
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil terkirim ke spreadsheet guru!`;
+      } catch (err) {
+        console.error("Gagal mengirim data via fetch:", err);
+        statusKirimEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-slate-600"></i> Gagal otomatis via Fetch (Offline).`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function cetakLaporan() {
+      closeModal();
+      window.print();
+    }
+
+    function resetFormPrompt() {
+      showConfirm("Reset LKPD", "Apakah Anda yakin ingin meriset seluruh isian dan data praktikum LKPD 04 ini?", () => {
+        document.getElementById('sel-sekolah').value = "";
+        updateDropdownKelas();
+        tableData = [];
+        waktuMulai = 0;
+        renderTabelPengamatan();
+        document.getElementById('form-quiz').reset();
+        questionBank.forEach(q => {
+          const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+        });
+        document.getElementById('btn-download-pdf').classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("Reset Selesai", "Formulir telah dikembalikan ke kondisi awal.", "info");
+      });
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = "bg-slate-900 text-white border-slate-700";
+      let icon = "fa-circle-info text-slate-300";
+
+      toast.className = `p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-xs min-w-[260px] max-w-xs transition transform translate-y-2 opacity-0 pointer-events-auto ${bg}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base mt-0.5"></i>
+        <div class="flex-1">
+          <p class="font-bold mb-0.5">${title}</p>
+          <p class="text-slate-300 leading-tight">${message}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      modal.classList.remove('hidden');
+
+      const btnYes = document.getElementById('btn-confirm-yes');
+      const btnCancel = document.getElementById('btn-confirm-cancel');
+
+      const handleYes = () => { cleanup(); onConfirm(); };
+      const handleCancel = () => { cleanup(); };
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', handleYes);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnYes.addEventListener('click', handleYes);
+      btnCancel.addEventListener('click', handleCancel);
+    }
+
+    window.onload = function () {
+      initDatabaseSiswa();
+      renderQuiz();
+    };
+  </script>
+</body>
+</html>
