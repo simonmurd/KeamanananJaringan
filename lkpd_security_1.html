@@ -49,7 +49,7 @@
 </head>
 <body class="bg-white text-slate-900 min-h-screen pb-16">
 
-  <!-- Clean Header Section -->
+  <!-- Header -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center space-x-3">
@@ -59,7 +59,7 @@
         <div>
           <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
           <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 01: Fundamental Keamanan & Analisis Ancaman</h1>
-          <p class="text-xs text-slate-500 mt-0.5">CIA Triad, Defense in Depth, Malware & Phishing Header Analysis, Social Engineering Tree, Risk Matrix</p>
+          <p class="text-xs text-slate-500 mt-0.5">CIA Triad, Defense in Depth, Phishing Header Analysis (6 Emails), Multi-Scenario OpSec, Network Isolation, Risk Matrix (6 Assets)</p>
         </div>
       </div>
       <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
@@ -114,7 +114,7 @@
     <!-- Main Content Wrapper -->
     <div id="main-content" class="locked-section space-y-8">
 
-      <!-- Section 2: Ringkasan Teori Keamanan Siber -->
+      <!-- Section 2: Ringkasan Teori -->
       <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -125,7 +125,7 @@
         </div>
 
         <p class="text-xs text-slate-600 leading-relaxed mb-5">
-          Keamanan informasi bertumpu pada perlindungan aset data dari berbagai spektrum ancaman melalui penerapan arsitektur berlapis (<b>Defense in Depth</b>) serta penjelakan nilai risiko operasional.
+          Keamanan informasi bertumpu pada perlindungan aset data dari berbagai spektrum ancaman melalui penerapan arsitektur berlapis (<b>Defense in Depth</b>) serta kalkulasi risiko operasional.
         </p>
 
         <!-- CIA Triad Table -->
@@ -194,44 +194,42 @@
           <div>
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
-              Laboratorium Simulasi Keamanan Siber
+              Laboratorium Simulasi Keamanan Siber (Extended Version)
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Analisis header email phishing, uji OpSec social engineering, isolasi worm jaringan, dan pemetaan risiko.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis 6 header email phishing, uji OpSec 3 skenario social engineering, isolasi 8 node worm jaringan, dan pemetaan 6 matriks risiko.</p>
           </div>
-          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Clean White Studio Modules</span>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Extended Practical Modules</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <!-- Simulasi 1: Phishing vs Legit Email Inspector -->
+          <!-- Simulasi 1: Phishing Email Inspector (6 Email) -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-envelope-open-text text-slate-800"></i> Simulasi 1: Phishing Email Inspector
+                  <i class="fa-solid fa-envelope-open-text text-slate-800"></i> Simulasi 1: Phishing Email Inspector (6 Pesan)
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Header & Link Analysis</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Header & Link Inspection</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Pilih pesan di kotak masuk, periksa header teknis dan URL asli sebelum memutuskan.</p>
+              <p class="text-xs text-slate-500 mb-3">Periksa 6 pesan email berikut. Buka Header/Inspect URL/SPF sebelum memutuskan [Aman] atau [Phishing].</p>
 
               <!-- Email Client Layout -->
               <div class="border border-slate-200 rounded-xl overflow-hidden mb-3 bg-white">
                 <!-- Mail Selector Header -->
-                <div class="bg-slate-50 p-2 border-b border-slate-200 flex gap-2 overflow-x-auto">
-                  <button onclick="selectEmail(0)" id="mail-tab-0" class="mail-tab-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-900">Email #1 (Bank ABC)</button>
-                  <button onclick="selectEmail(1)" id="mail-tab-1" class="mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600">Email #2 (HRD Internal)</button>
-                  <button onclick="selectEmail(2)" id="mail-tab-2" class="mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600">Email #3 (Google Alert)</button>
+                <div id="mail-tabs-container" class="bg-slate-50 p-2 border-b border-slate-200 flex gap-1.5 overflow-x-auto">
+                  <!-- Rendered via JavaScript -->
                 </div>
 
                 <!-- Top Inspection Action Bar -->
                 <div class="p-2 border-b border-slate-200 bg-white flex flex-wrap gap-1.5">
-                  <button onclick="toggleRawHeader()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-code mr-1"></i> [Lihat Raw Header]</button>
-                  <button onclick="inspectURL()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-link mr-1"></i> [Inspect URL]</button>
+                  <button onclick="toggleRawHeader()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-code mr-1"></i> [Raw Header]</button>
+                  <button onclick="inspectURL()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-link mr-1"></i> [Inspect Target URL]</button>
                   <button onclick="checkSPFDKIM()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[11px] font-semibold text-slate-800"><i class="fa-solid fa-certificate mr-1"></i> [Cek SPF/DKIM]</button>
                 </div>
 
                 <!-- Reading Pane -->
-                <div class="p-4 bg-white min-h-[140px] text-xs" id="email-reading-pane">
+                <div class="p-4 bg-white min-h-[150px] text-xs" id="email-reading-pane">
                   <!-- Dynamic JS Content -->
                 </div>
 
@@ -243,29 +241,39 @@
             </div>
 
             <!-- Bottom Action Decision Bar -->
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
-              <span class="text-[10px] text-slate-500 font-semibold">Keputusan Siswa:</span>
-              <div class="flex gap-2">
-                <button onclick="judgeEmail('SAFE')" class="bg-white hover:bg-slate-100 border border-slate-300 text-slate-900 font-semibold text-xs px-3 py-1.5 rounded-lg transition">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-slate-500 font-semibold">Keputusan:</span>
+                <button onclick="judgeEmail('SAFE')" class="bg-white hover:bg-slate-100 border border-slate-300 text-slate-900 font-semibold text-xs px-2.5 py-1.5 rounded-lg transition">
                   <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> [Tandai Aman]
                 </button>
-                <button onclick="judgeEmail('PHISHING')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition">
+                <button onclick="judgeEmail('PHISHING')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-2.5 py-1.5 rounded-lg transition">
                   <i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> [Laporkan Phishing]
                 </button>
               </div>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
             </div>
           </div>
 
-          <!-- Simulasi 2: Social Engineering Scenario Tree -->
+          <!-- Simulasi 2: Multi-Scenario Social Engineering Tree -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-diagram-nested text-slate-800"></i> Simulasi 2: Social Engineering Tree
+                  <i class="fa-solid fa-diagram-nested text-slate-800"></i> Simulasi 2: Social Engineering (3 Skenario)
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Interactive OpSec Tree</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">OpSec Decision Tree</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Hadapi desakan penyamar untuk menguji prosedur kewaspadaan operasional (OpSec).</p>
+              <p class="text-xs text-slate-500 mb-2">Pilih skenario lalu uji ketahanan OpSec Anda dalam menghadapi manipulasi psikologis.</p>
+
+              <!-- Scenario Switcher Buttons -->
+              <div class="flex gap-1.5 mb-3">
+                <button onclick="switchSim2Scenario(0)" id="sim2-scen-btn-0" class="flex-1 py-1 px-2 text-[11px] font-bold rounded-lg bg-slate-900 text-white">Kasus 1: Vishing CEO</button>
+                <button onclick="switchSim2Scenario(1)" id="sim2-scen-btn-1" class="flex-1 py-1 px-2 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Kasus 2: WhatsApp Vendor</button>
+                <button onclick="switchSim2Scenario(2)" id="sim2-scen-btn-2" class="flex-1 py-1 px-2 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Kasus 3: Baiting USB Paket</button>
+              </div>
 
               <!-- Node Narrative Box & Gauges -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -273,7 +281,7 @@
                 <div class="md:col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
                   <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Kartu Skenario Percakapan:</span>
                   <p id="sim2-dialogue" class="font-medium text-slate-900 leading-relaxed italic">
-                    "Halo admin! Saya Direktur Utama. Token VPN saya rusak dan saya ada rapat penting 5 menit lagi. Tolong reset password & kirim token VPN baru sekarang!"
+                    <!-- Dynamic Dialogue -->
                   </p>
                 </div>
 
@@ -292,114 +300,138 @@
 
               <!-- Action Response Options -->
               <div class="space-y-2 mb-3" id="sim2-options-container">
-                <!-- JS Dynamic Child Nodes -->
+                <!-- JS Dynamic Options -->
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
-              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Pilih tindakan sesuai SOP Keamanan.</span>
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Pilih langkah sesuai SOP Keamanan Perusahaan.</span>
               <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
                 <i class="fa-solid fa-plus"></i> Catat Log
               </button>
             </div>
           </div>
 
-          <!-- Simulasi 3: Social Network Malware Spreading -->
+          <!-- Simulasi 3: Complex Network Malware Isolation (8 Nodes) -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-network-wired text-slate-800"></i> Simulasi 3: Malware Spreading & Isolation
+                  <i class="fa-solid fa-network-wired text-slate-800"></i> Simulasi 3: Malware Isolation (8 Node Network)
                 </h3>
                 <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Network Containment</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Isolasi node/koneksi sebelum infeksi Worm menyebar ke seluruh segmen LAN.</p>
+              <p class="text-xs text-slate-500 mb-2">Klik garis untuk memutus koneksi (Cut Link) atau klik node untuk mengisolasi (Firewall Block) sebelum Worm menginfeksi seluruh server.</p>
 
-              <!-- Node Graph Interactive Canvas -->
-              <div class="grid-bg-pattern border border-slate-200 rounded-xl p-3 relative min-h-[170px] flex items-center justify-center mb-3 overflow-hidden">
-                <svg id="sim3-svg-canvas" class="w-full h-[160px]">
+              <!-- Node Graph Canvas 8 Nodes -->
+              <div class="grid-bg-pattern border border-slate-200 rounded-xl p-2 relative min-h-[190px] flex items-center justify-center mb-3 overflow-hidden">
+                <svg id="sim3-svg-canvas" class="w-full h-[180px]">
                   <!-- Links -->
-                  <line id="link-0-1" x1="50" y1="80" x2="140" y1="40" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-1')" />
-                  <line id="link-0-2" x1="50" y1="80" x2="140" y1="120" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-2')" />
-                  <line id="link-1-3" x1="140" y1="40" x2="240" y1="40" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('1-3')" />
-                  <line id="link-2-4" x1="140" y1="120" x2="240" y1="120" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('2-4')" />
-                  <line id="link-3-5" x1="240" y1="40" x2="330" y1="80" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('3-5')" />
-                  <line id="link-4-5" x1="240" y1="120" x2="330" y1="80" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('4-5')" />
+                  <line id="link-0-1" x1="40" y1="50" x2="110" y1="50" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-1')" />
+                  <line id="link-0-2" x1="40" y1="50" x2="110" y1="130" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('0-2')" />
+                  <line id="link-1-3" x1="110" y1="50" x2="190" y1="90" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('1-3')" />
+                  <line id="link-2-3" x1="110" y1="130" x2="190" y1="90" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('2-3')" />
+                  <line id="link-3-4" x1="190" y1="90" x2="270" y1="40" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('3-4')" />
+                  <line id="link-3-5" x1="190" y1="90" x2="270" y1="140" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('3-5')" />
+                  <line id="link-4-6" x1="270" y1="40" x2="350" y1="50" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('4-6')" />
+                  <line id="link-5-6" x1="270" y1="140" x2="350" y1="50" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('5-6')" />
+                  <line id="link-5-7" x1="270" y1="140" x2="350" y1="130" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('5-7')" />
+                  <line id="link-6-7" x1="350" y1="50" x2="350" y1="130" stroke="#0f172a" stroke-width="2" class="cursor-pointer" onclick="toggleLink('6-7')" />
 
                   <!-- Nodes -->
                   <g id="node-0" onclick="isolateNode(0)" class="cursor-pointer">
-                    <circle cx="50" cy="80" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-0" />
-                    <text x="50" y="84" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">P0</text>
+                    <circle cx="40" cy="50" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-0" />
+                    <text x="40" y="54" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">P0</text>
                   </g>
-
                   <g id="node-1" onclick="isolateNode(1)" class="cursor-pointer">
-                    <circle cx="140" cy="40" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-1" />
-                    <text x="140" y="44" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">PC1</text>
+                    <circle cx="110" cy="50" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-1" />
+                    <text x="110" y="54" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">PC1</text>
                   </g>
-
                   <g id="node-2" onclick="isolateNode(2)" class="cursor-pointer">
-                    <circle cx="140" cy="120" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-2" />
-                    <text x="140" y="124" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">PC2</text>
+                    <circle cx="110" cy="130" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-2" />
+                    <text x="110" y="134" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">PC2</text>
                   </g>
-
                   <g id="node-3" onclick="isolateNode(3)" class="cursor-pointer">
-                    <circle cx="240" cy="40" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-3" />
-                    <text x="240" y="44" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">SVR1</text>
+                    <circle cx="190" cy="90" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-3" />
+                    <text x="190" y="94" text-anchor="middle" font-size="8" font-weight="bold" fill="#0f172a">CORE</text>
                   </g>
-
                   <g id="node-4" onclick="isolateNode(4)" class="cursor-pointer">
-                    <circle cx="240" cy="120" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-4" />
-                    <text x="240" y="124" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">SVR2</text>
+                    <circle cx="270" cy="40" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-4" />
+                    <text x="270" y="44" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">WEB</text>
                   </g>
-
                   <g id="node-5" onclick="isolateNode(5)" class="cursor-pointer">
-                    <circle cx="330" cy="80" r="18" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-5" />
-                    <text x="330" y="84" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">DB</text>
+                    <circle cx="270" cy="140" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-5" />
+                    <text x="270" y="144" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">APP</text>
+                  </g>
+                  <g id="node-6" onclick="isolateNode(6)" class="cursor-pointer">
+                    <circle cx="350" cy="50" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-6" />
+                    <text x="350" y="54" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">DB</text>
+                  </g>
+                  <g id="node-7" onclick="isolateNode(7)" class="cursor-pointer">
+                    <circle cx="350" cy="130" r="16" fill="#ffffff" stroke="#0f172a" stroke-width="2" id="circle-node-7" />
+                    <text x="350" y="134" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">BCK</text>
                   </g>
                 </svg>
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
               <div class="flex items-center gap-2">
                 <button onclick="startMalwareSpread()" id="btn-start-malware" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
-                  <i class="fa-solid fa-play mr-1"></i> Mulai Simulasi Worm
+                  <i class="fa-solid fa-play mr-1"></i> Mulai Infeksi Worm
                 </button>
                 <button onclick="resetMalwareSim()" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium text-xs px-2.5 py-1.5 rounded-lg transition">
                   <i class="fa-solid fa-rotate-left"></i> Reset
                 </button>
               </div>
-              <span id="sim3-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Siap</span>
+              <div class="flex items-center gap-2">
+                <span id="sim3-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Siap</span>
+                <button onclick="catatSimulasi(3)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                  <i class="fa-solid fa-plus"></i> Catat Log
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Simulasi 4: Risk Matrix Assessor -->
+          <!-- Simulasi 4: Risk Matrix Assessor (6 Aset) -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-table-cells text-slate-800"></i> Simulasi 4: Risk Matrix Assessor (3x3)
+                  <i class="fa-solid fa-table-cells text-slate-800"></i> Simulasi 4: Risk Matrix Assessor (6 Aset)
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">ISO 27001 Assessment</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">ISO 27001 Risk Analysis</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Petakan skenario ancaman ke matriks dampak vs kemungkinan, lalu tentukan mitigasi.</p>
+              <p class="text-xs text-slate-500 mb-2">Petakan 6 aset dan skenario ancamannya ke dalam Matriks Risiko 3x3, lalu tentukan mitigasinya.</p>
 
-              <!-- Asset List & 3x3 Matrix Grid -->
+              <!-- Asset Selector & Grid -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <!-- Asset Selector Left -->
-                <div class="space-y-2 text-xs">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase block">Pilih Aset & Ancaman:</span>
-                  <div onclick="selectRiskAsset(0)" id="risk-asset-0" class="risk-asset-card p-2.5 rounded-xl border border-slate-300 bg-white cursor-pointer hover:border-slate-400 font-medium">
+                <!-- Asset Selector Left (Scrollable list for 6 items) -->
+                <div class="space-y-1.5 text-xs max-h-[180px] overflow-y-auto pr-1">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase block">Daftar Aset Kritis:</span>
+                  <div onclick="selectRiskAsset(0)" id="risk-asset-0" class="risk-asset-card p-2 rounded-lg border border-slate-300 bg-white cursor-pointer hover:border-slate-400 font-medium text-[11px]">
                     <p class="font-bold text-slate-900">1. Database Keuangan</p>
-                    <p class="text-[10px] text-slate-500">Ancaman: Ransomware & Tanpa Backup</p>
+                    <p class="text-[10px] text-slate-500">Ransomware & Tanpa Backup Offline</p>
                   </div>
-                  <div onclick="selectRiskAsset(1)" id="risk-asset-1" class="risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400">
+                  <div onclick="selectRiskAsset(1)" id="risk-asset-1" class="risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-400 text-[11px]">
                     <p class="font-bold text-slate-900">2. Router Core Utama</p>
-                    <p class="text-[10px] text-slate-500">Ancaman: DDoS Attack dari Internet</p>
+                    <p class="text-[10px] text-slate-500">DDoS Attack dari Luar</p>
                   </div>
-                  <div onclick="selectRiskAsset(2)" id="risk-asset-2" class="risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400">
+                  <div onclick="selectRiskAsset(2)" id="risk-asset-2" class="risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-400 text-[11px]">
                     <p class="font-bold text-slate-900">3. Wi-Fi Tamu Kantor</p>
-                    <p class="text-[10px] text-slate-500">Ancaman: Eavesdropping / Sniffing</p>
+                    <p class="text-[10px] text-slate-500">Eavesdropping / Sniffing Traffic</p>
+                  </div>
+                  <div onclick="selectRiskAsset(3)" id="risk-asset-3" class="risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-400 text-[11px]">
+                    <p class="font-bold text-slate-900">4. Laptop Staf WFH</p>
+                    <p class="text-[10px] text-slate-500">Keylogger via Wi-Fi Publik</p>
+                  </div>
+                  <div onclick="selectRiskAsset(4)" id="risk-asset-4" class="risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-400 text-[11px]">
+                    <p class="font-bold text-slate-900">5. Web Portal Sekolah</p>
+                    <p class="text-[10px] text-slate-500">SQL Injection & Web Defacement</p>
+                  </div>
+                  <div onclick="selectRiskAsset(5)" id="risk-asset-5" class="risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-400 text-[11px]">
+                    <p class="font-bold text-slate-900">6. Server Backup Cloud</p>
+                    <p class="text-[10px] text-slate-500">Kebocoran Kredensial API Key</p>
                   </div>
                 </div>
 
@@ -407,23 +439,23 @@
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-[10px]">
                   <span class="font-bold text-slate-600 block mb-1 text-center">Matriks Risiko (Likelihood vs Impact)</span>
                   <div class="grid grid-cols-3 gap-1 text-center font-semibold">
-                    <div onclick="placeRiskInMatrix('Low', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">L-Unlikely</div>
-                    <div onclick="placeRiskInMatrix('Med', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">M-Unlikely</div>
-                    <div onclick="placeRiskInMatrix('High', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">H-Unlikely</div>
+                    <div onclick="placeRiskInMatrix('Low', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-emerald-50">L-Unlikely</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-emerald-50">M-Unlikely</div>
+                    <div onclick="placeRiskInMatrix('High', 'Unlikely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-amber-50">H-Unlikely</div>
 
-                    <div onclick="placeRiskInMatrix('Low', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-emerald-50">L-Likely</div>
-                    <div onclick="placeRiskInMatrix('Med', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">M-Likely</div>
-                    <div onclick="placeRiskInMatrix('High', 'Likely')" id="cell-high-likely" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">H-Likely</div>
+                    <div onclick="placeRiskInMatrix('Low', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-emerald-50">L-Likely</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-amber-50">M-Likely</div>
+                    <div onclick="placeRiskInMatrix('High', 'Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-rose-50">H-Likely</div>
 
-                    <div onclick="placeRiskInMatrix('Low', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-amber-50">L-Highly</div>
-                    <div onclick="placeRiskInMatrix('Med', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">M-Highly</div>
-                    <div onclick="placeRiskInMatrix('High', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-2 rounded cursor-pointer hover:bg-rose-50">H-Highly</div>
+                    <div onclick="placeRiskInMatrix('Low', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-amber-50">L-Highly</div>
+                    <div onclick="placeRiskInMatrix('Med', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-rose-50">M-Highly</div>
+                    <div onclick="placeRiskInMatrix('High', 'Highly Likely')" class="matrix-cell border border-slate-300 bg-white p-1.5 rounded cursor-pointer hover:bg-rose-50">H-Highly</div>
                   </div>
                 </div>
               </div>
 
               <!-- Mitigation Selection Area -->
-              <div id="sim4-mitigation-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs mb-3 hidden">
+              <div id="sim4-mitigation-box" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs mb-2 hidden">
                 <!-- JS Options for Mitigation -->
               </div>
             </div>
@@ -573,6 +605,7 @@
     let waktuMulai = 0;
     let masterDataSiswa = [];
     let tableData = [];
+    let sim1Decisions = {}; 
 
     const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
 SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
@@ -853,23 +886,27 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       { id: 20, q: "Zona warna Merah (High Risk) pada Matriks Risiko 3x3 menuntut organisasi untuk...", options: ["A. Mengabaikan masalah karena terlalu mahal", "B. Segera mengambil tindakan mitigasi kontrol untuk menurunkan risiko", "C. Menutup perusahaan", "D. Membiarkan risiko terjadi alami", "E. Menghapus aset dari daftar"], ans: "B" }
     ];
 
-    // Data State Simulasi 1: Phishing Email Inspector
+    // ==========================================
+    // SIMULASI 1: PHISHING EMAIL INSPECTOR (6 EMAILS)
+    // ==========================================
     const emailsData = [
       {
         id: 0,
+        title: "Email #1 (Bank ABC)",
         subject: "Urgent: Verifikasi Keamanan Akun Bank ABC Anda",
         sender: "Bank ABC Security <security-alert@bankabc-update-check.xyz>",
         returnPath: "spammer-relay@unsecure-host.net",
         receivedFrom: "mail.unsecure-host.net [185.220.101.5]",
-        body: `<p class="mb-2">Nasabah Yth,</p><p class="mb-3">Kami mendeteksi aktivitas mencurigakan pada akun Anda. Klik tombol di bawah ini dalam kurun 24 jam untuk memverifikasi ulang password Anda atau akun akan diblokir permanent.</p><p class="text-center my-3"><a href="#" class="bg-slate-900 text-white font-bold px-4 py-2 rounded">www.bankabc.com/verify-account</a></p>`,
+        body: `<p class="mb-2">Nasabah Yth,</p><p class="mb-3">Kami mendeteksi aktivitas mencurigakan pada akun Anda. Klik tombol di bawah ini dalam kurun 24 jam untuk memverifikasi ulang password Anda atau akun akan diblokir permanen.</p><p class="text-center my-3"><a href="#" class="bg-slate-900 text-white font-bold px-4 py-2 rounded">www.bankabc.com/verify-account</a></p>`,
         realURL: "http://www.bankabc-update-check.xyz/login-phish.php",
         spf: "FAIL",
         dkim: "FAIL",
         isPhish: true,
-        reason: "Domain pengirim palsu, Return-Path bertentangan, URL asli mengarahkan ke domain meragukan (.xyz), SPF/DKIM FAIL."
+        reason: "Domain pengirim palsu (.xyz), Return-Path bertentangan, URL asli mengarahkan ke situs Phishing, SPF/DKIM FAIL."
       },
       {
         id: 1,
+        title: "Email #2 (HRD Internal)",
         subject: "Pembaruan Jadwal Pelatihan Cyber Security Internal",
         sender: "HRD Sekolah <hrd@smkn1singkawang.sch.id>",
         returnPath: "hrd@smkn1singkawang.sch.id",
@@ -883,6 +920,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       },
       {
         id: 2,
+        title: "Email #3 (Google Alert)",
         subject: "Keamanan Akun: Percobaan Login Baru Terdeteksi",
         sender: "Google Security Team <no-reply@accounts.google.com>",
         returnPath: "bounce-3412@bounces.google.com",
@@ -893,19 +931,76 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         dkim: "PASS",
         isPhish: false,
         reason: "Email otentik dari Google. Server pengirim valid dan URL mengarah langsung ke domain sah Google."
+      },
+      {
+        id: 3,
+        title: "Email #4 (Layanan Kurir/Resi)",
+        subject: "Gagal Kirim Paket #ID-89211 - Konfirmasi Alamat Anda",
+        sender: "Express Delivery <notification@express-courier-tracking.biz>",
+        returnPath: "admin@fake-spammer-node.top",
+        receivedFrom: "node-relay-88.fake-spammer-node.top [192.168.99.12]",
+        body: `<p class="mb-2">Pelanggan Yth,</p><p class="mb-3">Paket Anda #ID-89211 tidak dapat dikirimkan karena alamat tidak lengkap. Harap bayar biaya konfirmasi ulang sebesar Rp 5.000 via tautan di bawah.</p><p class="my-2"><a href="#" class="text-slate-900 font-bold underline">https://express-courier-tracking.biz/pay-fee</a></p>`,
+        realURL: "http://express-courier-tracking.biz/steal-creditcard.php",
+        spf: "FAIL",
+        dkim: "FAIL",
+        isPhish: true,
+        reason: "Phishing penipuan paket kurir. Menggunakan domain .biz, meminta biaya tambahan, SPF/DKIM FAIL."
+      },
+      {
+        id: 4,
+        title: "Email #5 (Cloud Storage File)",
+        subject: "Dokumen Gaji_Bonus_2026.pdf Dibagikan kepada Anda",
+        sender: "Cloud Drive Sharing <sharing-noreply@drive-secure-share.tk>",
+        returnPath: "anonymous@cloud-mailer.ru",
+        receivedFrom: "mail-relay.cloud-mailer.ru [95.173.136.72]",
+        body: `<p class="mb-2">Halo,</p><p class="mb-3">Staf Keuangan membagikan dokumen sensitif "Gaji_Bonus_2026.pdf". Klik tombol di bawah dan masukkan kredensial Microsoft/Google Anda untuk mengunduh.</p><p class="my-2"><a href="#" class="bg-slate-900 text-white font-bold px-3 py-1.5 rounded">Buka Dokumen PDF</a></p>`,
+        realURL: "http://drive-secure-share.tk/fake-login-harvest.html",
+        spf: "FAIL",
+        dkim: "FAIL",
+        isPhish: true,
+        reason: "Phishing credential harvesting file sharing. Domain .tk mencurigakan dan meminta login ulang pada halaman palsu."
+      },
+      {
+        id: 5,
+        title: "Email #6 (IT Support Alert)",
+        subject: "Pemberitahuan Pemeliharaan Server Portal Sekolah (Jumat 20.00 WIB)",
+        sender: "IT Helpdesk <helpdesk@smkn1singkawang.sch.id>",
+        returnPath: "helpdesk@smkn1singkawang.sch.id",
+        receivedFrom: "mail.smkn1singkawang.sch.id [103.20.14.2]",
+        body: `<p class="mb-2">Yth. Seluruh Civitas Akademika,</p><p class="mb-3">Disampaikan bahwa akan dilakukan maintenance rutin database pada Jumat malam. Layanan portal akan offline selama 2 jam. Tidak ada tindakan pengguna yang diperlukan.</p>`,
+        realURL: "N/A (Tidak Ada Link Tautan)",
+        spf: "PASS",
+        dkim: "PASS",
+        isPhish: false,
+        reason: "Email pengumuman resmi dari IT Support sekolah. Pengirim dan SPF/DKIM valid, tidak ada link atau permintaan input data mencurigakan."
       }
     ];
+
     let selectedEmailIdx = 0;
+
+    function renderEmailTabs() {
+      const container = document.getElementById('mail-tabs-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      emailsData.forEach((email, idx) => {
+        const btn = document.createElement('button');
+        btn.id = `mail-tab-${idx}`;
+        const isSelected = idx === selectedEmailIdx;
+        btn.className = isSelected 
+          ? "px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-900 shadow-2xs shrink-0"
+          : "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-200/50 shrink-0";
+        
+        const decisionMark = sim1Decisions[idx] ? ` <i class="fa-solid fa-check text-emerald-600"></i>` : '';
+        btn.innerHTML = `${email.title}${decisionMark}`;
+        btn.onclick = () => selectEmail(idx);
+        container.appendChild(btn);
+      });
+    }
 
     function selectEmail(idx) {
       selectedEmailIdx = idx;
-      document.querySelectorAll('.mail-tab-btn').forEach((btn, i) => {
-        if (i === idx) {
-          btn.className = "mail-tab-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-900 shadow-2xs";
-        } else {
-          btn.className = "mail-tab-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600";
-        }
-      });
+      renderEmailTabs();
       document.getElementById('sim1-inspect-box').classList.add('hidden');
       renderEmailContent();
     }
@@ -927,7 +1022,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       const box = document.getElementById('sim1-inspect-box');
       box.classList.remove('hidden');
       box.innerHTML = `
-        <p class="font-bold text-slate-800 text-[11px] mb-1">[TECHNICAL RAW HEADER]</p>
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[TECHNICAL RAW HEADER INSPECTION]</p>
         <p>From: ${email.sender}</p>
         <p>Return-Path: ${email.returnPath}</p>
         <p>Received: from ${email.receivedFrom}</p>
@@ -939,9 +1034,8 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       const box = document.getElementById('sim1-inspect-box');
       box.classList.remove('hidden');
       box.innerHTML = `
-        <p class="font-bold text-slate-800 text-[11px] mb-1">[REAL DESTINATION INSPECTION]</p>
-        <p>Displayed Anchor Text: www.bankabc.com/verify-account</p>
-        <p class="text-rose-600 font-bold">Real Target URL: ${email.realURL}</p>
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[REAL DESTINATION TARGET INSPECTION]</p>
+        <p>Target Hyperlink: <span class="text-rose-600 font-bold">${email.realURL}</span></p>
       `;
     }
 
@@ -950,14 +1044,17 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       const box = document.getElementById('sim1-inspect-box');
       box.classList.remove('hidden');
       box.innerHTML = `
-        <p class="font-bold text-slate-800 text-[11px] mb-1">[DOMAIN AUTHENTICATION STATUS]</p>
-        <p>SPF Verification : <span class="font-bold ${email.spf==='PASS'?'text-emerald-600':'text-rose-600'}">${email.spf}</span></p>
-        <p>DKIM Signature  : <span class="font-bold ${email.dkim==='PASS'?'text-emerald-600':'text-rose-600'}">${email.dkim}</span></p>
+        <p class="font-bold text-slate-800 text-[11px] mb-1">[AUTHENTICATION HEADERS (SPF & DKIM)]</p>
+        <p>SPF Check  : <span class="font-bold ${email.spf==='PASS'?'text-emerald-600':'text-rose-600'}">${email.spf}</span></p>
+        <p>DKIM Check : <span class="font-bold ${email.dkim==='PASS'?'text-emerald-600':'text-rose-600'}">${email.dkim}</span></p>
       `;
     }
 
     function judgeEmail(decision) {
       const email = emailsData[selectedEmailIdx];
+      sim1Decisions[selectedEmailIdx] = decision;
+      renderEmailTabs();
+
       let correct = (decision === 'PHISHING' && email.isPhish) || (decision === 'SAFE' && !email.isPhish);
 
       if (correct) {
@@ -967,43 +1064,131 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       }
     }
 
-    // Data State Simulasi 2: Social Engineering Tree
-    const sim2TreeData = {
-      0: {
-        dialogue: '"Halo Admin! Saya Direktur Utama. Token VPN saya mendadak rusak dan saya ada rapat pemegang saham 5 menit lagi! Tolong reset password & kirim token VPN baru sekarang via WA ini!"',
-        score: 100,
-        leak: 'SAFE (0 DATA)',
-        options: [
-          { text: 'Opsi A (Rentan): Reset password langsung dan kirim kredensial baru via chat WhatsApp.', next: 1 },
-          { text: 'Opsi B (Keragu-raguan): Meminta NIK/Tanggal Lahir Direktur via telepon tanpa verifikasi saluran resmi.', next: 2 },
-          { text: 'Opsi C (Aman/SOP): Menolak permintaan via telepon, lalu melakukan verifikasi ulang (callback) ke nomor internal resmi CEO.', next: 3 }
-        ]
+    // ==========================================
+    // SIMULASI 2: MULTI-SCENARIO SOCIAL ENGINEERING TREE (3 SKENARIO)
+    // ==========================================
+    let activeSim2Scenario = 0;
+
+    const sim2ScenariosData = [
+      // Skenario 0: Vishing CEO
+      {
+        name: "Kasus 1: Vishing Telepon CEO",
+        0: {
+          dialogue: '"Halo Admin! Saya Direktur Utama. Token VPN saya mendadak rusak dan saya ada rapat pemegang saham 5 menit lagi! Tolong reset password & kirim token VPN baru sekarang via WA ini!"',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [
+            { text: 'Opsi A (Rentan): Reset password langsung & kirim kredensial via WhatsApp.', next: 1 },
+            { text: 'Opsi B (Ragu): Meminta NIK Direktur via telepon tanpa konfirmasi nomor resmi.', next: 2 },
+            { text: 'Opsi C (Aman/SOP): Menolak via telepon, lakukan Callback resmi ke sekretariat CEO.', next: 3 }
+          ]
+        },
+        1: {
+          dialogue: 'PENYERANG BERHASIL! Penyerang mengontrol akun VPN CEO dan langsung mengakses server database utama perusahaan.',
+          score: 10,
+          leak: 'CRITICAL LEAK (Full Network Hijacked)',
+          options: [{ text: 'Ulangi Kasus Ini', next: 0 }]
+        },
+        2: {
+          dialogue: 'Penyerang memberikan NIK palsu hasil crawling sosial media, lalu mengintimidasi memecat Anda jika lambat.',
+          score: 40,
+          leak: 'HIGH RISK (Identitas Ditiru)',
+          options: [
+            { text: 'Menyerahkan password karena panik diancam dipecat.', next: 1 },
+            { text: 'Tersadar dan langsung beralih mematuhi SOP Callback resmi.', next: 3 }
+          ]
+        },
+        3: {
+          dialogue: 'SOP SECURE! Anda menelpon nomor resmi sekretariat. CEO asli mengonfirmasi tidak pernah menelpon. Serangan Vishing digagalkan!',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [{ text: 'Skenario Selesai dengan Sukses', next: 0 }]
+        }
       },
-      1: {
-        dialogue: 'PENYERANG BERHASIL! Penyerang mengontrol akun VPN CEO dan langsung mengakses server database utama sekolah/perusahaan.',
-        score: 10,
-        leak: 'CRITICAL LEAK (Full Network Hijacked)',
-        options: [{ text: 'Mulai Ulang Skenario', next: 0 }]
+      // Skenario 1: WhatsApp Vendor IT
+      {
+        name: "Kasus 2: Smishing WhatsApp Vendor IT",
+        0: {
+          dialogue: '"Pesan WA dari +62-812-XXXX-991: Halo Team Network! Kami dari Vendor Mikrotik Support. Terdeteksi anomaly pada Router Core Anda. Mohon buka AnyDesk & beri kami ID Remote sekarang untuk patching emergency!"',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [
+            { text: 'Opsi A (Rentan): Langsung buka AnyDesk dan memberikan ID Remote Access.', next: 1 },
+            { text: 'Opsi B (Ragu): Meminta foto ID Card vendor via WhatsApp.', next: 2 },
+            { text: 'Opsi C (Aman/SOP): Tolak remote access, verifikasi ke Manager IT & tiket resmi vendor.', next: 3 }
+          ]
+        },
+        1: {
+          dialogue: 'PENYERANG BERHASIL! Penyerang masuk via AnyDesk, memasang Backdoor Trojan pada Router Core.',
+          score: 10,
+          leak: 'CRITICAL LEAK (Router Infiltrated)',
+          options: [{ text: 'Ulangi Kasus Ini', next: 0 }]
+        },
+        2: {
+          dialogue: 'Penyerang mengimpor foto ID Card editan Photoshop yang sangat meyakinkan agar Anda percaya.',
+          score: 50,
+          leak: 'MEDIUM RISK (Social Proof Attack)',
+          options: [
+            { text: 'Percaya foto ID Card lalu memberikan akses AnyDesk.', next: 1 },
+            { text: 'Tetap menolak dan memverifikasi ke Sistem Tiket Vendor resmi.', next: 3 }
+          ]
+        },
+        3: {
+          dialogue: 'SOP SECURE! Tiket resmi vendor mengonfirmasi tidak ada jadwal maintenance emergency. Kontak WA ternyata nomor jepretan impersonator!',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [{ text: 'Skenario Selesai dengan Sukses', next: 0 }]
+        }
       },
-      2: {
-        dialogue: 'Penyerang memberikan NIK palsu yang diperoleh dari medsos, lalu terus mengintimidasi Anda agar segera mengirimkan password.',
-        score: 45,
-        leak: 'MEDIUM RISK (Identitas Ditiru)',
-        options: [
-          { text: 'Tetap menyerahkan password karena panik diancam dipecat.', next: 1 },
-          { text: 'Tersadar dan langsung beralih mematuhi SOP Callback resmi.', next: 3 }
-        ]
-      },
-      3: {
-        dialogue: 'SOP SECURE! Anda menelepon ke ekstensi resmi sekretariat CEO. CEO asli mengonfirmasi tidak pernah meminta reset via telepon. Serangan Social Engineering digagalkan!',
-        score: 100,
-        leak: 'SAFE (0 DATA LEAKED)',
-        options: [{ text: 'Skenario Selesai dengan Sukses', next: 0 }]
+      // Skenario 2: Baiting Paket USB
+      {
+        name: "Kasus 3: Baiting Paket USB di Resepsionis",
+        0: {
+          dialogue: 'Kurir paket meninggalkan amplop di resepsionis berisi USB Flashdisk berlabel "Daftar_Gaji_Bonus_2026.xlsx". Apa tindakan Anda saat menemukan USB tersebut?',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [
+            { text: 'Opsi A (Rentan): Mengolok USB ke Komputer Kerja karena penasaran isi file bonus.', next: 1 },
+            { text: 'Opsi B (Ragu): Mengolok USB ke Laptop pribadi tanpa internet.', next: 2 },
+            { text: 'Opsi C (Aman/SOP): Jangan colok! Serahkan USB ke Tim Keamanan IT untuk diuji di Sandbox terisolasi.', next: 3 }
+          ]
+        },
+        1: {
+          dialogue: 'PENYERANG BERHASIL! USB mengandung serangan BadUSB / Rubber Ducky yang otomatis mengeksekusi script pemicu Ransomware!',
+          score: 10,
+          leak: 'CRITICAL LEAK (Ransomware Triggered)',
+          options: [{ text: 'Ulangi Kasus Ini', next: 0 }]
+        },
+        2: {
+          dialogue: 'Laptop pribadi Anda langsung terinfeksi malware Keylogger saat berkas autorun dieksekusi.',
+          score: 30,
+          leak: 'HIGH RISK (Personal Device Infected)',
+          options: [{ text: 'Ulangi Kasus Ini', next: 0 }]
+        },
+        3: {
+          dialogue: 'SOP SECURE! Tim IT menemukan USB tersebut berisi payload malicious executable. Usaha serangan Baiting fisik digagalkan sepenuhnya!',
+          score: 100,
+          leak: 'SAFE (0 DATA LEAKED)',
+          options: [{ text: 'Skenario Selesai dengan Sukses', next: 0 }]
+        }
       }
-    };
+    ];
+
+    function switchSim2Scenario(scenIdx) {
+      activeSim2Scenario = scenIdx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`sim2-scen-btn-${i}`);
+        if (btn) {
+          if (i === scenIdx) btn.className = "flex-1 py-1 px-2 text-[11px] font-bold rounded-lg bg-slate-900 text-white shadow-2xs";
+          else btn.className = "flex-1 py-1 px-2 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200";
+        }
+      }
+      renderSim2Node(0);
+    }
 
     function renderSim2Node(nodeId) {
-      const data = sim2TreeData[nodeId];
+      const scenData = sim2ScenariosData[activeSim2Scenario];
+      const data = scenData[nodeId];
       document.getElementById('sim2-dialogue').innerText = data.dialogue;
       document.getElementById('sim2-score').innerText = `${data.score}%`;
       
@@ -1017,24 +1202,34 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
 
       data.options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium text-slate-800 transition shadow-2xs flex items-center justify-between";
+        btn.className = "w-full text-left p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium text-slate-800 transition shadow-2xs flex items-center justify-between";
         btn.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>`;
         btn.onclick = () => renderSim2Node(opt.next);
         container.appendChild(btn);
       });
     }
 
-    // Data State Simulasi 3: Worm Propagation
-    let nodeStates = [0, 0, 0, 0, 0, 0]; // 0: Clean, 1: Infected, 2: Isolated
-    let linkBroken = { '0-1': false, '0-2': false, '1-3': false, '2-4': false, '3-5': false, '4-5': false };
+    // ==========================================
+    // SIMULASI 3: EXTENDED 8-NODE NETWORK WORM ISOLATION
+    // ==========================================
+    let nodeStates = [0, 0, 0, 0, 0, 0, 0, 0]; // 0: Clean, 1: Infected, 2: Isolated
+    let linkBroken = { 
+      '0-1': false, '0-2': false, '1-3': false, '2-3': false, 
+      '3-4': false, '3-5': false, '4-6': false, '5-6': false, 
+      '5-7': false, '6-7': false 
+    };
     let sim3Interval = null;
 
     function resetMalwareSim() {
       if (sim3Interval) clearInterval(sim3Interval);
-      nodeStates = [0, 0, 0, 0, 0, 0];
-      linkBroken = { '0-1': false, '0-2': false, '1-3': false, '2-4': false, '3-5': false, '4-5': false };
+      nodeStates = [0, 0, 0, 0, 0, 0, 0, 0];
+      linkBroken = { 
+        '0-1': false, '0-2': false, '1-3': false, '2-3': false, 
+        '3-4': false, '3-5': false, '4-6': false, '5-6': false, 
+        '5-7': false, '6-7': false 
+      };
       
-      // Reset Links visual
+      // Reset Links
       Object.keys(linkBroken).forEach(k => {
         const line = document.getElementById(`link-${k}`);
         if (line) {
@@ -1043,8 +1238,8 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         }
       });
 
-      // Reset Nodes visual
-      for (let i = 0; i < 6; i++) {
+      // Reset Nodes
+      for (let i = 0; i < 8; i++) {
         const circle = document.getElementById(`circle-node-${i}`);
         if (circle) {
           circle.setAttribute('fill', '#ffffff');
@@ -1064,7 +1259,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       if (linkBroken[linkKey]) {
         line.setAttribute('stroke', '#cbd5e1');
         line.setAttribute('stroke-dasharray', '4');
-        showToast("Koneksi Diputus", `Jalur jaringan ${linkKey} terputus (Cut Link).`, "info");
+        showToast("Koneksi Diputus", `Jalur jaringan ${linkKey} diputus (Cut Link).`, "info");
       } else {
         line.setAttribute('stroke', '#0f172a');
         line.setAttribute('stroke-dasharray', 'none');
@@ -1081,7 +1276,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       if (nodeStates[nodeId] === 2) {
         circle.setAttribute('fill', '#f1f5f9');
         circle.setAttribute('stroke', '#64748b');
-        showToast("Node Diisolasi", `Node #${nodeId} diaktifkan Firewall Block (Isolate Mode).`, "info");
+        showToast("Node Diisolasi", `Node #${nodeId} diaktifkan Firewall Block (Isolated).`, "info");
       } else {
         circle.setAttribute('fill', '#ffffff');
         circle.setAttribute('stroke', '#0f172a');
@@ -1092,7 +1287,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       resetMalwareSim();
       document.getElementById('btn-start-malware').disabled = true;
       document.getElementById('sim3-status-badge').className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200";
-      document.getElementById('sim3-status-badge').innerText = "Simulasi Penyebaran Aktif!";
+      document.getElementById('sim3-status-badge').innerText = "Inveksi Worm Aktif!";
 
       // Patient Zero (Node 0) infected
       nodeStates[0] = 1;
@@ -1103,16 +1298,18 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       const adjacency = [
         [{ node: 1, link: '0-1' }, { node: 2, link: '0-2' }],
         [{ node: 0, link: '0-1' }, { node: 3, link: '1-3' }],
-        [{ node: 0, link: '0-2' }, { node: 4, link: '2-4' }],
-        [{ node: 1, link: '1-3' }, { node: 5, link: '3-5' }],
-        [{ node: 2, link: '2-4' }, { node: 5, link: '4-5' }],
-        [{ node: 3, link: '3-5' }, { node: 4, link: '4-5' }]
+        [{ node: 0, link: '0-2' }, { node: 3, link: '2-3' }],
+        [{ node: 1, link: '1-3' }, { node: 2, link: '2-3' }, { node: 4, link: '3-4' }, { node: 5, link: '3-5' }],
+        [{ node: 3, link: '3-4' }, { node: 6, link: '4-6' }],
+        [{ node: 3, link: '3-5' }, { node: 6, link: '5-6' }, { node: 7, link: '5-7' }],
+        [{ node: 4, link: '4-6' }, { node: 5, link: '5-6' }, { node: 7, link: '6-7' }],
+        [{ node: 5, link: '5-7' }, { node: 6, link: '6-7' }]
       ];
 
       sim3Interval = setInterval(() => {
         let newInfections = [];
 
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
           if (nodeStates[i] === 1) { // Infected
             adjacency[i].forEach(neighbor => {
               const target = neighbor.node;
@@ -1135,29 +1332,34 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
             circle.classList.add('node-infected');
           });
         }
-      }, 1500);
+      }, 1400);
     }
 
     function evaluateWormContainment() {
       const infectedCount = nodeStates.filter(s => s === 1).length;
       const badge = document.getElementById('sim3-status-badge');
 
-      if (infectedCount <= 2) {
+      if (infectedCount <= 3) {
         badge.className = "text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
-        badge.innerText = `SANGAT BAIK: Terisolasi (${infectedCount} Node Terinfeksi)`;
-        showToast("Isolasi Berhasil!", "Penyebaran Worm berhasil dibendung dengan cepat!", "success");
+        badge.innerText = `SUKSES: Terisolasi (${infectedCount} Node Terinfeksi)`;
+        showToast("Isolasi Berhasil!", "Penyebaran Worm berhasil dibendung dengan efektif!", "success");
       } else {
         badge.className = "text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200";
-        badge.innerText = `GAGAL: Worm Menyebar Wide (${infectedCount} Node Terinfeksi)`;
-        showToast("Infeksi Meluas", "Worm berhasil menginfeksi sebagian besar segmen jaringan.", "warning");
+        badge.innerText = `GAGAL: Worm Outbreak (${infectedCount} Node Terinfeksi)`;
+        showToast("Infeksi Meluas", "Worm berhasil melintasi router dan menginfeksi server kritis.", "warning");
       }
     }
 
-    // Data State Simulasi 4: Risk Matrix Assessor
+    // ==========================================
+    // SIMULASI 4: EXTENDED RISK MATRIX ASSESSOR (6 ASSETS)
+    // ==========================================
     const riskAssetsData = [
-      { id: 0, name: "Database Keuangan", threat: "Ransomware & No Backup", correctImpact: "High", correctLikelihood: "Likely", mitigation: "Implementasi Daily Automated Offline Backup & EDR Software" },
-      { id: 1, name: "Router Core Utama", threat: "DDoS Attack", correctImpact: "High", correctLikelihood: "Unlikely", mitigation: "Implementasi Anti-DDoS Scrubbing & Rate Limiting" },
-      { id: 2, name: "Wi-Fi Tamu Kantor", threat: "Eavesdropping / Sniffing", correctImpact: "Low", correctLikelihood: "Likely", mitigation: "Isolasi VLAN Tamu & Enkripsi WPA3 Enterprise" }
+      { id: 0, name: "Database Keuangan", threat: "Ransomware & No Offline Backup", correctImpact: "High", correctLikelihood: "Likely", mitigation: "Implementasi Daily Automated Offline Backup & EDR Software" },
+      { id: 1, name: "Router Core Utama", threat: "DDoS Attack dari Luar", correctImpact: "High", correctLikelihood: "Unlikely", mitigation: "Implementasi Anti-DDoS Scrubbing & Rate Limiting Traffic" },
+      { id: 2, name: "Wi-Fi Tamu Kantor", threat: "Eavesdropping / Sniffing", correctImpact: "Low", correctLikelihood: "Likely", mitigation: "Isolasi VLAN Tamu & Enkripsi WPA3 Enterprise" },
+      { id: 3, name: "Laptop Staf WFH", threat: "Keylogger via Wi-Fi Publik", correctImpact: "Med", correctLikelihood: "Likely", mitigation: "Wajibkan Full-Disk Encryption & Always-On Corporate VPN" },
+      { id: 4, name: "Web Portal Sekolah", threat: "SQL Injection & Defacement", correctImpact: "Med", correctLikelihood: "Highly Likely", mitigation: "Web Application Firewall (WAF) & Input Parameter Sanitization" },
+      { id: 5, name: "Server Backup Cloud", threat: "Kebocoran API Key Access", correctImpact: "High", correctLikelihood: "Unlikely", mitigation: "Implementasi Secrets Manager & Enforce Multi-Factor Authentication (MFA)" }
     ];
     let selectedRiskAssetIdx = 0;
 
@@ -1165,12 +1367,12 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       selectedRiskAssetIdx = idx;
       document.querySelectorAll('.risk-asset-card').forEach((card, i) => {
         if (i === idx) {
-          card.className = "risk-asset-card p-2.5 rounded-xl border border-slate-400 bg-white cursor-pointer shadow-2xs font-medium";
+          card.className = "risk-asset-card p-2 rounded-lg border border-slate-400 bg-white cursor-pointer shadow-2xs font-medium text-[11px]";
         } else {
-          card.className = "risk-asset-card p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-300";
+          card.className = "risk-asset-card p-2 rounded-lg border border-slate-200 bg-white cursor-pointer hover:border-slate-300 text-[11px]";
         }
       });
-      document.getElementById('sim4-status-text').innerText = `Petakan Aset #${idx+1} (${riskAssetsData[idx].name}) ke kotak matriks.`;
+      document.getElementById('sim4-status-text').innerText = `Petakan Aset #${idx+1} (${riskAssetsData[idx].name}) ke matriks.`;
     }
 
     function placeRiskInMatrix(impact, likelihood) {
@@ -1181,32 +1383,66 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       let isCorrect = (impact === asset.correctImpact && likelihood === asset.correctLikelihood);
 
       box.innerHTML = `
-        <p class="font-bold text-slate-900 mb-1">Pemetaan: ${asset.name} $\\rightarrow$ ${impact} Impact, ${likelihood} Likelihood</p>
-        <p class="text-[11px] text-slate-600 mb-2">${isCorrect ? '<span class="text-emerald-600 font-bold">✓ Pemetaan Matriks Tepat!</span>' : '<span class="text-rose-600 font-bold">✕ Pemetaan Kurang Sesuai Standar ISO.</span>'}</p>
+        <p class="font-bold text-slate-900 mb-1">Hasil Pemetaan: ${asset.name} $\\rightarrow$ ${impact} Impact, ${likelihood} Likelihood</p>
+        <p class="text-[11px] text-slate-600 mb-2">${isCorrect ? '<span class="text-emerald-600 font-bold">✓ Pemetaan Sesuai Standar ISO/IEC 27001!</span>' : '<span class="text-rose-600 font-bold">✕ Pemetaan Kurang Tepat Sesuai Ancaman.</span>'}</p>
         <p class="font-bold text-slate-800 mb-1">Pilih Rekomendasi Mitigasi SOP:</p>
         <select id="sel-mitigation-opt" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs">
-          <option value="">-- Pilih Langkah Mitigasi --</option>
+          <option value="">-- Pilih Langkah Mitigasi SOP --</option>
           <option value="${asset.mitigation}">${asset.mitigation}</option>
-          <option value="Abaikan saja karena biaya tinggi">Abaikan saja karena biaya tinggi</option>
-          <option value="Matikan seluruh koneksi internet perusahaan">Matikan seluruh koneksi internet perusahaan</option>
+          <option value="Abaikan saja karena biaya implementasi tinggi">Abaikan saja karena biaya implementasi tinggi</option>
+          <option value="Mematikan seluruh server selamanya">Mematikan seluruh server selamanya</option>
         </select>
       `;
 
-      document.getElementById('sim4-status-text').innerText = `Pilih rekomendasi mitigasi untuk menurunkan nilai risiko.`;
+      document.getElementById('sim4-status-text').innerText = `Pilih opsi mitigasi yang tepat untuk menurunkan nilai risiko.`;
     }
 
     // RECORD SIMULATION LOGS
     function catatSimulasi(simNum) {
       let logEntry = {};
 
-      if (simNum === 2) {
+      if (simNum === 1) {
+        const email = emailsData[selectedEmailIdx];
+        const userDecision = sim1Decisions[selectedEmailIdx];
+
+        if (!userDecision) {
+          showToast("Belum Ada Keputusan", "Pilih [Tandai Aman] atau [Laporkan Phishing] pada email ini terlebih dahulu!", "warning");
+          return;
+        }
+
+        let isCorrect = (userDecision === 'PHISHING' && email.isPhish) || (userDecision === 'SAFE' && !email.isPhish);
+
+        logEntry = {
+          modul: "Simulasi 1: Phishing Email Inspector",
+          param: `${email.title}: ${email.subject.substring(0, 22)}...`,
+          hasil: `Keputusan: ${userDecision} (SPF/DKIM: ${email.spf}/${email.dkim})`,
+          status: isCorrect ? "PASS (Analisis Tepat)" : "RISK (Analisis Salah)"
+        };
+      } else if (simNum === 2) {
+        const scenName = sim2ScenariosData[activeSim2Scenario].name;
         const score = document.getElementById('sim2-score').innerText;
         const leak = document.getElementById('sim2-leak').innerText;
         logEntry = {
           modul: "Simulasi 2: Social Engineering Tree",
-          param: `OpSec Compliance Check`,
-          hasil: `Security Score: ${score}, Status Leak: ${leak}`,
+          param: `${scenName}`,
+          hasil: `Score: ${score} | Leak Status: ${leak}`,
           status: score === '100%' ? "PASS (OpSec Safe)" : "RISK (OpSec Vulnerable)"
+        };
+      } else if (simNum === 3) {
+        const infectedCount = nodeStates.filter(s => s === 1).length;
+        const isolatedCount = nodeStates.filter(s => s === 2).length;
+        const cleanCount = nodeStates.filter(s => s === 0).length;
+
+        if (infectedCount === 0) {
+          showToast("Simulasi Belum Berjalan", "Jalankan simulasi Worm terlebih dahulu sebelum mencatat log!", "warning");
+          return;
+        }
+
+        logEntry = {
+          modul: "Simulasi 3: Malware Isolation (8 Nodes)",
+          param: `Network Containment Test`,
+          hasil: `Infected: ${infectedCount} | Isolated: ${isolatedCount} | Clean: ${cleanCount}`,
+          status: infectedCount <= 3 ? "PASS (Containment Sukses)" : "RISK (Worm Outbreak)"
         };
       } else if (simNum === 4) {
         const asset = riskAssetsData[selectedRiskAssetIdx];
@@ -1216,7 +1452,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         logEntry = {
           modul: "Simulasi 4: Risk Matrix Assessor",
           param: `Aset: ${asset.name}`,
-          hasil: `Mitigasi: ${selectedMit.substring(0, 30)}...`,
+          hasil: `Mitigasi: ${selectedMit.substring(0, 28)}...`,
           status: selectedMit === asset.mitigation ? "PASS (Risk Mitigated)" : "NEEDS REVIEW"
         };
       }
@@ -1365,7 +1601,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
       document.getElementById('modal-score').innerText = nilaiAkhir;
 
-      let desc = "Sangat Baik! Anda menguasai analisis header phishing, OpSec, dan kalkulasi matriks risiko.";
+      let desc = "Sangat Baik! Anda menguasai analisis header phishing, OpSec multi-skenario, dan kalkulasi matriks risiko.";
       if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali autentikasi SPF/DKIM dan penanganan malware.";
       if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi simulasi OpSec tree dan analisis email phishing.";
       document.getElementById('modal-score-desc').innerText = desc;
@@ -1403,6 +1639,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         document.getElementById('sel-sekolah').value = "";
         updateDropdownKelas();
         tableData = [];
+        sim1Decisions = {};
         waktuMulai = 0;
         renderTabelPengamatan();
         document.getElementById('form-quiz').reset();
@@ -1465,7 +1702,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       initDatabaseSiswa();
       renderQuiz();
       selectEmail(0);
-      renderSim2Node(0);
+      switchSim2Scenario(0);
       selectRiskAsset(0);
     };
   </script>
