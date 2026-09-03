@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LKPD 02: Kriptografi & Keamanan Data</title>
+  <title>LKPD 02: Kriptografi & Keamanan Data (Advanced Lab)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -29,12 +29,6 @@
     .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
     .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
     
-    .grid-bg-pattern {
-      background-color: #ffffff;
-      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
-      background-size: 16px 16px;
-    }
-
     .wheel-transition {
       transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -193,56 +187,56 @@
           <div>
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
-              Laboratorium Simulasi Kriptografi & Keamanan Data
+              Laboratorium Simulasi Kriptografi & Keamanan Data (Advanced Lab)
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Roda sandi klasik, simulasi pertukaran kunci simetris/asimetris, pengujian efek avalanche hash, dan verifikasi tanda tangan digital.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Sandi klasik & kriptanalisis brute-force, protokol pertukaran kunci Hibrida & MitM attack, audit forensik hash kuantitatif, serta verifikasi PKI Chain of Trust.</p>
           </div>
-          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Studio Modules</span>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">4 Advanced Modules</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <!-- Simulasi 5: Caesar & Vigenère Interactive Wheel -->
+          <!-- Simulasi 5: Cryptanalysis & Multi-Stage Cipher Lab -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-compact-disc text-slate-800"></i> Simulasi 5: Caesar & Vigenère Wheel
+                  <i class="fa-solid fa-compact-disc text-slate-800"></i> Simulasi 5: Kriptanalisis & Superenkripsi Lab
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Classical Cryptography</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Cryptanalysis Engine</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Geser roda konsentris atau atur kunci untuk mengamati substitusi mono/polialfabetik secara visual.</p>
+              <p class="text-xs text-slate-500 mb-3">Lakukan enkripsi multi-layer atau pecahkan ciphertext rahasia menggunakan analisis frekuensi huruf dan serangan Brute Force.</p>
 
-              <!-- Interactive Wheel Layout -->
+              <!-- Interactive Wheel & Controls Layout -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 rounded-xl p-3 bg-white mb-3">
-                <!-- Wheel Left Canvas -->
+                <!-- Visual Wheel & Frequency Bar -->
                 <div class="flex flex-col items-center justify-center p-2 bg-slate-50 rounded-lg border border-slate-200 relative min-h-[220px]">
-                  <svg id="crypto-wheel" viewBox="0 0 200 200" class="w-48 h-48">
-                    <!-- Outer Circle (Plaintext A-Z) -->
+                  <svg id="crypto-wheel" viewBox="0 0 200 200" class="w-44 h-44">
                     <circle cx="100" cy="100" r="95" fill="none" stroke="#0f172a" stroke-width="2"/>
                     <g id="outer-letters"></g>
-
-                    <!-- Inner Rotating Circle (Ciphertext A-Z) -->
                     <g id="inner-wheel-group" class="wheel-transition">
                       <circle cx="100" cy="100" r="68" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
                       <g id="inner-letters"></g>
                     </g>
-                    <!-- Pointer Indicator -->
                     <polygon points="100,5 95,15 105,15" fill="#0f172a" />
                   </svg>
-                  <span class="text-[10px] text-slate-500 font-mono mt-1">Luar: Plaintext | Dalam: Ciphertext</span>
+                  <div class="w-full mt-2 text-[9px] font-mono text-slate-600 bg-white p-1.5 rounded border border-slate-200">
+                    <span class="font-bold block text-slate-800 mb-0.5">FREKUENSI VOKAL HASIL:</span>
+                    <div id="freq-analysis-bar" class="text-emerald-700 font-bold truncate">A:0% E:0% I:0% O:0% U:0%</div>
+                  </div>
                 </div>
 
-                <!-- Right Control Panel -->
-                <div class="space-y-2.5 text-xs flex flex-col justify-between">
+                <!-- Controls & Modes -->
+                <div class="space-y-2 text-xs flex flex-col justify-between">
                   <div>
-                    <label class="block font-bold text-slate-700 mb-1">Modus Kriptografi:</label>
-                    <div class="grid grid-cols-2 gap-1 mb-2">
-                      <button onclick="setCipherMode('caesar')" id="btn-mode-caesar" class="py-1 px-2 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[11px]">Caesar</button>
-                      <button onclick="setCipherMode('vigenere')" id="btn-mode-vigenere" class="py-1 px-2 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[11px]">Vigenère</button>
+                    <label class="block font-bold text-slate-700 mb-1">Modus Operasi Kripto:</label>
+                    <div class="grid grid-cols-3 gap-1 mb-2">
+                      <button onclick="setCipherMode('caesar')" id="btn-mode-caesar" class="py-1 px-1 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[10px]">Caesar</button>
+                      <button onclick="setCipherMode('vigenere')" id="btn-mode-vigenere" class="py-1 px-1 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[10px]">Vigenère</button>
+                      <button onclick="setCipherMode('crack')" id="btn-mode-crack" class="py-1 px-1 rounded font-medium border border-slate-300 bg-amber-50 text-amber-800 text-[10px]">Crack Mode</button>
                     </div>
 
-                    <!-- Shift Slider / Key Input -->
+                    <!-- Caesar Shift Control -->
                     <div id="caesar-controls">
                       <div class="flex justify-between font-semibold mb-1">
                         <span>Shift Key (K):</span>
@@ -251,21 +245,29 @@
                       <input type="range" id="shift-range" min="0" max="25" value="3" oninput="updateCaesarShift(this.value)" class="w-full accent-slate-900">
                     </div>
 
+                    <!-- Vigenere Control -->
                     <div id="vigenere-controls" class="hidden">
                       <label class="block font-semibold mb-1">Kata Kunci (Key Word):</label>
-                      <input type="text" id="vigenere-key" value="AMANKAN" uppercase oninput="processCiphertext()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono uppercase text-slate-900 font-bold">
+                      <input type="text" id="vigenere-key" value="AMANKAN" oninput="processCiphertext()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono uppercase text-slate-900 font-bold">
+                    </div>
+
+                    <!-- Crack Challenge Banner -->
+                    <div id="crack-controls" class="hidden p-2 bg-amber-50 border border-amber-200 rounded text-[10px] space-y-1">
+                      <span class="font-bold text-amber-900 block"><i class="fa-solid fa-unlock text-amber-700"></i> Misi Kriptanalisis:</span>
+                      <p class="text-amber-800">Cari pergeseran K yang mengubah Ciphertext rahasia menjadi kata berarsitektur keamanan jaringan yang valid!</p>
+                      <button onclick="loadCrackChallenge()" class="w-full py-1 bg-amber-800 text-white font-bold rounded mt-1">[Muat Ciphertext Misterius]</button>
                     </div>
                   </div>
 
                   <!-- Text Input / Output -->
-                  <div class="space-y-1.5">
+                  <div class="space-y-1">
                     <div>
-                      <span class="font-bold text-slate-700 text-[11px]">Input Plaintext:</span>
-                      <input type="text" id="plain-input" value="TKJ" oninput="processCiphertext()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono uppercase font-bold text-slate-900">
+                      <span class="font-bold text-slate-700 text-[10px]">Input Plaintext / Ciphertext:</span>
+                      <input type="text" id="plain-input" value="AMANKAN JARINGAN KOMPUTER" oninput="processCiphertext()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-mono uppercase font-bold text-slate-900 text-xs">
                     </div>
                     <div>
-                      <span class="font-bold text-slate-700 text-[11px]">Output Ciphertext:</span>
-                      <div id="cipher-output" class="p-2 bg-slate-100 rounded border border-slate-300 font-mono font-extrabold text-slate-900 text-sm tracking-wider">WN-M</div>
+                      <span class="font-bold text-slate-700 text-[10px]">Keluaran (Output Result):</span>
+                      <div id="cipher-output" class="p-1.5 bg-slate-100 rounded border border-slate-300 font-mono font-extrabold text-slate-900 text-xs tracking-wider truncate">DPDQNDQ MDUINGDQ NRPSXWHU</div>
                     </div>
                   </div>
                 </div>
@@ -273,195 +275,254 @@
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
-              <span class="text-slate-600 font-medium text-[11px]">Putar roda untuk analisis substitusi huruf.</span>
+              <span id="sim5-status-text" class="text-slate-600 font-medium text-[11px]">Uji pergeseran huruf & analisis frekuensi vokal.</span>
               <button onclick="catatSimulasi(5)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
                 <i class="fa-solid fa-plus"></i> Catat Log
               </button>
             </div>
           </div>
 
-          <!-- Simulasi 6: Symmetric vs Asymmetric Key Exchange -->
+          <!-- Simulasi 6: Hybrid Encryption & MITM Attack Laboratory -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-arrows-split-up-and-left text-slate-800"></i> Simulasi 6: Symmetric vs Asymmetric Key Exchange
+                  <i class="fa-solid fa-shield-halved text-slate-800"></i> Simulasi 6: Diffie-Hellman & MITM Attack Lab
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Key Exchange Protocol</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">HTTPS / TLS Protocol</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Bandingkan risiko transmisi kunci tunggal simetris vs keamanan enkripsi kunci publik (RSA).</p>
+              <p class="text-xs text-slate-500 mb-3">Simulasikan kalkulasi matematis pertukaran kunci Diffie-Hellman, enkripsi Hibrida SSL/TLS, serta uji ketahanan dari serangan Man-in-the-Middle (MitM).</p>
 
-              <!-- Top Mode Toggle -->
-              <div class="flex gap-2 mb-3">
-                <button onclick="setKeySimMode('symmetric')" id="btn-key-sym" class="flex-1 py-1.5 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold text-xs">Simetris (Shared Secret)</button>
-                <button onclick="setKeySimMode('asymmetric')" id="btn-key-asym" class="flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs">Asimetris (Public/Private)</button>
+              <!-- Protocol Switcher -->
+              <div class="flex gap-1 mb-3 text-[11px]">
+                <button onclick="setKeySimMode('dh')" id="btn-key-dh" class="flex-1 py-1 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold">Diffie-Hellman (DH)</button>
+                <button onclick="setKeySimMode('hybrid')" id="btn-key-hybrid" class="flex-1 py-1 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium">SSL/TLS Hybrid</button>
+                <button onclick="setKeySimMode('mitm')" id="btn-key-mitm" class="flex-1 py-1 rounded-lg border border-slate-300 bg-amber-50 text-amber-900 font-bold">MitM Attack</button>
               </div>
 
-              <!-- Interactive 3-Column Diagram -->
-              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs min-h-[170px] relative">
-                <div class="grid grid-cols-3 gap-2 text-center">
-                  <!-- Alice Column -->
-                  <div class="border border-slate-900 rounded-lg p-2 bg-slate-50">
-                    <i class="fa-solid fa-user text-slate-800 text-lg mb-1"></i>
-                    <p class="font-bold text-slate-900">Alice</p>
-                    <div id="alice-key-box" class="mt-2 text-[10px] font-mono"></div>
-                  </div>
-
-                  <!-- Public Channel Column -->
-                  <div class="border border-dashed border-slate-300 rounded-lg p-2 bg-slate-50/50 flex flex-col justify-between">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase">Public Channel / Internet</span>
-                    <div id="channel-anim-box" class="py-2 min-h-[40px] font-mono text-[10px] font-bold text-slate-800">
-                      <!-- Transmission Status -->
+              <!-- Interactive Visual Workspace -->
+              <div class="border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs min-h-[185px] relative">
+                
+                <!-- DH Math Display -->
+                <div id="dh-panel" class="space-y-2">
+                  <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                      <span class="font-bold block text-slate-800">Param Publik Bersama:</span>
+                      <span>Prime $p = 23$, Base $g = 5$</span>
                     </div>
-                    <span class="text-[9px] text-slate-400">Jalur Terbuka</span>
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                      <span class="font-bold block text-slate-800">Formula Kunci Bersama:</span>
+                      <span>$S = (g^a \bmod p)^b \bmod p$</span>
+                    </div>
                   </div>
 
-                  <!-- Bob Column -->
-                  <div class="border border-slate-900 rounded-lg p-2 bg-slate-50">
-                    <i class="fa-solid fa-user text-slate-800 text-lg mb-1"></i>
-                    <p class="font-bold text-slate-900">Bob</p>
-                    <div id="bob-key-box" class="mt-2 text-[10px] font-mono"></div>
+                  <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div class="p-2 bg-emerald-50 border border-emerald-200 rounded">
+                      <span class="font-bold text-emerald-900 block">Alice (Privat $a=6$):</span>
+                      <span>Hitung Publik $A = 5^6 \bmod 23 = $ <b class="text-emerald-700 font-mono">8</b></span>
+                    </div>
+                    <div class="p-2 bg-blue-50 border border-blue-200 rounded">
+                      <span class="font-bold text-blue-900 block">Bob (Privat $b=15$):</span>
+                      <span>Hitung Publik $B = 5^{15} \bmod 23 = $ <b class="text-blue-700 font-mono">19</b></span>
+                    </div>
+                  </div>
+
+                  <div id="dh-result-box" class="p-2 bg-slate-900 text-white rounded text-center font-mono text-[11px] font-bold">
+                    Kunci Rahasia Bersama Terhitung ($S$): ?
                   </div>
                 </div>
 
-                <!-- Bottom Eve Eavesdropper Panel -->
-                <div class="mt-3 p-2 bg-slate-100 rounded-lg border border-slate-300 flex items-center justify-between text-[11px]">
-                  <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-ninja text-slate-800 text-base"></i>
-                    <span class="font-bold text-slate-900">Eve (Attacker/Eavesdropper):</span>
+                <!-- Hybrid & MitM Dynamic Diagram -->
+                <div id="diagram-panel" class="hidden space-y-2">
+                  <div class="grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div class="border border-slate-800 rounded-lg p-2 bg-slate-50">
+                      <i class="fa-solid fa-laptop text-slate-800 text-base mb-1"></i>
+                      <p class="font-bold">Klien (Alice)</p>
+                      <div id="alice-key-box" class="mt-1 font-mono text-[9px]"></div>
+                    </div>
+                    <div class="border border-dashed border-slate-300 rounded-lg p-1.5 bg-slate-50/50 flex flex-col justify-between">
+                      <span class="text-[8px] font-bold text-slate-400 uppercase">Jaringan Publik</span>
+                      <div id="channel-anim-box" class="py-1 font-mono text-[9px] font-bold text-slate-800">
+                        Channel Aman
+                      </div>
+                      <span class="text-[8px] text-slate-400">Port 443 HTTPS</span>
+                    </div>
+                    <div class="border border-slate-800 rounded-lg p-2 bg-slate-50">
+                      <i class="fa-solid fa-server text-slate-800 text-base mb-1"></i>
+                      <p class="font-bold">Server (Bob)</p>
+                      <div id="bob-key-box" class="mt-1 font-mono text-[9px]"></div>
+                    </div>
                   </div>
-                  <span id="eve-status-text" class="font-mono font-bold text-slate-700">Mengintip Jalur...</span>
+
+                  <div id="eve-panel" class="p-2 bg-slate-100 rounded-lg border border-slate-300 flex items-center justify-between text-[10px]">
+                    <div class="flex items-center gap-1.5">
+                      <i class="fa-solid fa-user-ninja text-slate-800 text-sm"></i>
+                      <span class="font-bold text-slate-900">Eve (Peretas MitM):</span>
+                    </div>
+                    <span id="eve-status-text" class="font-mono font-bold text-slate-700">Pasif / Mengamati</span>
+                  </div>
                 </div>
+
               </div>
 
-              <!-- Simulation Step Trigger Buttons -->
+              <!-- Action Bar -->
               <div id="sim6-action-bar" class="flex gap-2 mb-3">
-                <!-- Dynamic Steps JS -->
+                <!-- Action Buttons Rendered via JS -->
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
-              <span id="sim6-status-text" class="text-slate-600 font-medium">Jalankan alur pertukaran kunci.</span>
+              <span id="sim6-status-text" class="text-slate-600 font-medium text-[11px]">Hitung perumusan pertukaran kunci matematis.</span>
               <button onclick="catatSimulasi(6)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
                 <i class="fa-solid fa-plus"></i> Catat Log
               </button>
             </div>
           </div>
 
-          <!-- Simulasi 7: Data Integrity Checksum (Hashing Visualizer) -->
+          <!-- Simulasi 7: Forensic Hash Laboratory & Avalanche Effect Analysis -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-hashtag text-slate-800"></i> Simulasi 7: Data Integrity & Avalanche Effect
+                  <i class="fa-solid fa-hashtag text-slate-800"></i> Simulasi 7: Forensic Hash & Salt Audit Lab
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Hash Visualizer</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Hash Quantifier</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Ubah 1 karakter saja pada dokumen B untuk membuktikan sifat *Avalanche Effect* pada fungsi hash.</p>
+              <p class="text-xs text-slate-500 mb-3">Uji persentase *Avalanche Effect* secara kuantitatif (Hamming Distance Bit) dan audit penggaraman password (*Salt*).</p>
 
-              <!-- Two Column Comparator Layout -->
+              <!-- Documents Comparison Input -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-xs">
-                <!-- Document A -->
                 <div>
-                  <label class="block font-bold text-slate-800 mb-1">Dokumen A (Asli):</label>
-                  <textarea id="doc-a-text" oninput="calculateHashes()" class="w-full h-20 bg-white border border-slate-300 rounded-xl p-2.5 font-mono text-[11px] text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none">Transfer Rp 1.000.000 ke Rekening A</textarea>
+                  <label class="block font-bold text-slate-800 mb-1 text-[11px]">Dokumen Asli (A):</label>
+                  <textarea id="doc-a-text" oninput="calculateHashes()" class="w-full h-16 bg-white border border-slate-300 rounded-xl p-2 font-mono text-[10px] text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none">Transfer Rp 1.000.000 ke Rekening A</textarea>
                 </div>
-
-                <!-- Document B -->
                 <div>
                   <div class="flex justify-between mb-1">
-                    <label class="font-bold text-slate-800">Dokumen B (Modifikasi):</label>
+                    <label class="font-bold text-slate-800 text-[11px]">Dokumen Modifikasi (B):</label>
                     <button onclick="copyAToB()" class="text-[10px] text-slate-600 underline hover:text-slate-900">Salin dari A</button>
                   </div>
-                  <textarea id="doc-b-text" oninput="calculateHashes()" class="w-full h-20 bg-white border border-slate-300 rounded-xl p-2.5 font-mono text-[11px] text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none">Transfer Rp 1.000.000 ke Rekening A.</textarea>
+                  <textarea id="doc-b-text" oninput="calculateHashes()" class="w-full h-16 bg-white border border-slate-300 rounded-xl p-2 font-mono text-[10px] text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none">Transfer Rp 1.000.000 ke Rekening A.</textarea>
                 </div>
               </div>
 
-              <!-- Hash Value Comparison Box -->
+              <!-- Salt Input & Password Defense Audit -->
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-xs flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-1">
+                  <i class="fa-solid fa-key text-slate-700"></i>
+                  <span class="font-bold text-[11px] text-slate-800">Penggaraman (Salt):</span>
+                  <input type="text" id="salt-input" value="S4ltR4ndom99" oninput="calculateHashes()" class="flex-1 bg-white border border-slate-300 rounded px-2 py-0.5 font-mono text-[10px] text-slate-900 font-bold">
+                </div>
+                <span class="text-[9px] text-slate-500 font-medium">Mencegah Rainbow Table</span>
+              </div>
+
+              <!-- Forensic Hash Analysis Display -->
               <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono-code space-y-2 mb-3">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
-                  <span class="font-bold text-slate-700">STATUS INTEGRITAS DATA:</span>
-                  <span id="hash-match-status" class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-rose-100 text-rose-800 border border-rose-200">INTEGRITY VIOLATED</span>
+                  <span class="font-bold text-slate-700 text-[10px]">ANALISIS KUALITATIF BINER:</span>
+                  <span id="avalanche-percentage-badge" class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-slate-900 text-white">Avalanche: 0.0% Bit Changed</span>
                 </div>
 
                 <div>
-                  <span class="text-[10px] font-bold text-slate-400 block">MD5 (128-bit):</span>
-                  <p class="text-[10px] text-slate-700 truncate">A: <span id="hash-md5-a" class="font-bold"></span></p>
-                  <p class="text-[10px] text-slate-700 truncate">B: <span id="hash-md5-b" class="font-bold"></span></p>
+                  <span class="text-[9px] font-bold text-slate-400 block">SHA-256 Digest Dokumen A (256-bit):</span>
+                  <p class="text-[9px] text-slate-700 truncate font-bold" id="hash-sha256-a">---</p>
                 </div>
 
                 <div>
-                  <span class="text-[10px] font-bold text-slate-400 block">SHA-256 (256-bit):</span>
-                  <p class="text-[10px] text-slate-700 truncate">A: <span id="hash-sha256-a" class="font-bold"></span></p>
-                  <p class="text-[10px] text-slate-700 truncate">B: <span id="hash-sha256-b" class="font-bold"></span></p>
+                  <span class="text-[9px] font-bold text-slate-400 block">SHA-256 Digest Dokumen B (256-bit):</span>
+                  <p class="text-[9px] text-slate-700 truncate font-bold" id="hash-sha256-b">---</p>
+                </div>
+
+                <div class="pt-1 border-t border-slate-200 flex justify-between text-[9px]">
+                  <span>MD5 (A): <b id="hash-md5-a" class="text-slate-800"></b></span>
+                  <span>MD5 (B): <b id="hash-md5-b" class="text-slate-800"></b></span>
                 </div>
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
-              <span class="text-slate-600 font-medium text-[11px]">Uji Avalanche effect dengan mengubah 1 karakter.</span>
+              <span id="sim7-status-text" class="text-slate-600 font-medium text-[11px]">Uji modifikasi karakter dan perubahan bit hash.</span>
               <button onclick="catatSimulasi(7)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
                 <i class="fa-solid fa-plus"></i> Catat Log
               </button>
             </div>
           </div>
 
-          <!-- Simulasi 8: Digital Signature Verifier -->
+          <!-- Simulasi 8: PKI Chain of Trust & Digital Forensics Inspection -->
           <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <i class="fa-solid fa-file-signature text-slate-800"></i> Simulasi 8: Digital Signature Verifier
+                  <i class="fa-solid fa-certificate text-slate-800"></i> Simulasi 8: PKI Chain of Trust & Inspector
                 </h3>
-                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">PKI Validation</span>
+                <span class="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">X.509 Audit</span>
               </div>
-              <p class="text-xs text-slate-500 mb-3">Uji otentikasi dokumen digital dan deteksi pemalsuan data (Data Tampering).</p>
+              <p class="text-xs text-slate-500 mb-3">Lakukan audit forensik terhadap Rantai Kepercayaan sertifikat digital, pemalsuan multidokumen, dan cek status revokasi CRL/OCSP.</p>
 
-              <!-- PDF Preview Layout -->
+              <!-- Multifactor Document Editor Layout -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border border-slate-200 rounded-xl p-3 bg-white mb-3 text-xs">
-                <!-- Document Viewer Center (2 cols) -->
-                <div class="md:col-span-2 border border-slate-300 rounded-lg p-3 bg-white flex flex-col justify-between min-h-[160px] relative">
+                <!-- Document PDF Viewer -->
+                <div class="md:col-span-2 border border-slate-300 rounded-lg p-2.5 bg-white flex flex-col justify-between min-h-[175px] relative">
                   <div>
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-1.5 mb-2">
-                      <span class="font-bold text-slate-900 text-[11px] uppercase tracking-wider"><i class="fa-solid fa-file-pdf text-slate-700 mr-1"></i> SURAT KEPUTUSAN BEASISWA.PDF</span>
-                      <span class="text-[9px] font-mono text-slate-400">DOC-2026-X8</span>
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-1 mb-2">
+                      <span class="font-bold text-slate-900 text-[10px] uppercase tracking-wider"><i class="fa-solid fa-file-pdf text-slate-700 mr-1"></i> SURAT_KEPUTUSAN_BEASISWA.PDF</span>
+                      <span class="text-[8px] font-mono text-slate-400">DOC-2026-X8</span>
                     </div>
-                    <div id="pdf-doc-content" class="text-[11px] text-slate-800 font-mono leading-relaxed">
-                      SURAT KEPUTUSAN HEADMASTER<br>
-                      Nominal Bantuan : <span id="doc-nominal-val" class="font-bold bg-slate-100 px-1 border border-slate-300">Rp 5.000.000</span><br>
-                      Penerima : Siswa Berprestasi TKJ
+                    <div class="text-[10px] text-slate-800 font-mono space-y-1">
+                      <p>Nama Penerima: <span id="doc-nama-val" class="font-bold bg-slate-100 px-1 border border-slate-300">Siswa Berprestasi TKJ</span></p>
+                      <p>Nominal Bantuan: <span id="doc-nominal-val" class="font-bold bg-slate-100 px-1 border border-slate-300">Rp 5.000.000</span></p>
+                      <p>Masa Berlaku : <span id="doc-date-val" class="font-bold bg-slate-100 px-1 border border-slate-300">31 Desember 2026</span></p>
                     </div>
                   </div>
 
                   <!-- Digital Stamp Footer -->
-                  <div class="mt-4 pt-2 border-t border-slate-200 flex justify-between items-center">
+                  <div class="mt-3 pt-1.5 border-t border-slate-200 flex justify-between items-center">
                     <div>
-                      <span class="text-[9px] text-slate-400 block font-bold">DIGITAL STAMP SIGNATURE</span>
+                      <span class="text-[8px] text-slate-400 block font-bold uppercase">PKI Verification Status</span>
                       <span id="stamp-status-text" class="text-[10px] font-bold text-emerald-700 font-mono">VALID SIGNATURE ✓</span>
                     </div>
-                    <div id="stamp-badge-icon" class="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 text-sm">
+                    <div id="stamp-badge-icon" class="w-7 h-7 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 text-xs">
                       <i class="fa-solid fa-certificate"></i>
                     </div>
                   </div>
                 </div>
 
-                <!-- Side Panel Cert Details -->
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 flex flex-col justify-between text-[10px] space-y-2">
+                <!-- PKI Chain & Actions -->
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 flex flex-col justify-between text-[9px] space-y-2">
                   <div>
-                    <span class="font-bold text-slate-900 block mb-1">Rincian Sertifikat PKI:</span>
-                    <p class="text-slate-600">Signer: <b class="text-slate-900">Kepala Sekolah</b></p>
-                    <p class="text-slate-600">Issuer: <b class="text-slate-900">CA SMKN 1 Singkawang</b></p>
-                    <p class="text-slate-600 font-mono truncate mt-1">Fingerprint: <b class="text-slate-800">4A:8F:90:B2:1C</b></p>
-                    <p class="text-slate-600">Algorithm: <b class="text-slate-800 font-mono">SHA-256 with RSA-2048</b></p>
+                    <span class="font-bold text-slate-900 block mb-1">PKI Chain of Trust:</span>
+                    <div class="space-y-1 font-mono text-[8px]">
+                      <div class="p-1 bg-white border border-slate-200 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-building-columns text-slate-600"></i>
+                        <span>Root CA Indonesia</span>
+                      </div>
+                      <div class="pl-2">
+                        <div class="p-1 bg-white border border-slate-200 rounded flex items-center gap-1">
+                          <i class="fa-solid fa-shield-cat text-slate-600"></i>
+                          <span>Sub-CA EduCert</span>
+                        </div>
+                      </div>
+                      <div class="pl-4">
+                        <div class="p-1 bg-emerald-50 border border-emerald-300 rounded text-emerald-900 font-bold flex items-center gap-1">
+                          <i class="fa-solid fa-key text-emerald-700"></i>
+                          <span>Signer Cert (Kepsek)</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <!-- Action Buttons -->
+                  <!-- Tamper Controls -->
                   <div class="space-y-1">
-                    <button onclick="tamperDocument()" class="w-full py-1 px-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded font-semibold text-[10px] transition">
-                      <i class="fa-solid fa-pen-to-square mr-1"></i> [Edit Nominal Dokumen]
+                    <button onclick="toggleTamperField('nominal')" class="w-full py-0.5 px-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded font-semibold text-[9px] text-left truncate">
+                      <i class="fa-solid fa-pen-to-square mr-1"></i> [Edit Nominal]
                     </button>
-                    <button onclick="verifyDigitalSignature()" class="w-full py-1 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded font-bold text-[10px] transition">
-                      <i class="fa-solid fa-shield-check mr-1"></i> [Verifikasi Tanda Tangan]
+                    <button onclick="toggleTamperField('nama')" class="w-full py-0.5 px-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded font-semibold text-[9px] text-left truncate">
+                      <i class="fa-solid fa-user-pen mr-1"></i> [Edit Nama Penerima]
+                    </button>
+                    <button onclick="toggleRevocationStatus()" id="btn-crl-toggle" class="w-full py-0.5 px-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-900 rounded font-bold text-[9px] text-left truncate">
+                      <i class="fa-solid fa-ban mr-1"></i> [Cabut Sertifikat (CRL)]
+                    </button>
+                    <button onclick="verifyPKISignature()" class="w-full py-1 px-1 bg-slate-900 hover:bg-slate-800 text-white rounded font-bold text-[9px] transition">
+                      <i class="fa-solid fa-shield-check mr-1"></i> [Audit Forensik PKI]
                     </button>
                   </div>
                 </div>
@@ -469,7 +530,7 @@
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
-              <span id="sim8-status-text" class="text-slate-600 font-medium">Uji validitas sertifikat digital.</span>
+              <span id="sim8-status-text" class="text-slate-600 font-medium text-[11px]">Audit integritas dokumen dan rantai kepercayaan PKI.</span>
               <button onclick="catatSimulasi(8)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
                 <i class="fa-solid fa-plus"></i> Catat Log
               </button>
@@ -893,13 +954,14 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       { id: 20, q: "Berapakah standar panjang kunci minimum yang direkomendasikan untuk keamanan algoritma enkripsi RSA saat ini?", options: ["A. 128 bit", "B. 256 bit", "C. 512 bit", "D. 1024 bit", "E. 2048 bit"], ans: "E" }
     ];
 
-    // --- SIMULASI 5: CAESAR & VIGENERE WHEEL LOGIC ---
+    // --- ENHANCED SIMULASI 5 LOGIC: CIPHER & CRYPTANALYSIS LAB ---
     let currentCipherMode = 'caesar';
     let currentCaesarShift = 3;
 
     function initCryptoWheel() {
       const outerG = document.getElementById('outer-letters');
       const innerG = document.getElementById('inner-letters');
+      if(!outerG || !innerG) return;
       outerG.innerHTML = '';
       innerG.innerHTML = '';
 
@@ -910,7 +972,6 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       for (let i = 0; i < 26; i++) {
         const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
         
-        // Outer Plaintext
         const xo = 100 + radiusOuter * Math.cos(angle);
         const yo = 100 + radiusOuter * Math.sin(angle);
         const textO = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -923,7 +984,6 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         textO.textContent = letters[i];
         outerG.appendChild(textO);
 
-        // Inner Ciphertext
         const xi = 100 + radiusInner * Math.cos(angle);
         const yi = 100 + radiusInner * Math.sin(angle);
         const textI = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -943,19 +1003,29 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       currentCipherMode = mode;
       const btnCaesar = document.getElementById('btn-mode-caesar');
       const btnVig = document.getElementById('btn-mode-vigenere');
+      const btnCrack = document.getElementById('btn-mode-crack');
       const cControls = document.getElementById('caesar-controls');
       const vControls = document.getElementById('vigenere-controls');
+      const crControls = document.getElementById('crack-controls');
+
+      btnCaesar.className = "py-1 px-1 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[10px]";
+      btnVig.className = "py-1 px-1 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[10px]";
+      btnCrack.className = "py-1 px-1 rounded font-medium border border-slate-300 bg-amber-50 text-amber-800 text-[10px]";
+
+      cControls.classList.add('hidden');
+      vControls.classList.add('hidden');
+      crControls.classList.add('hidden');
 
       if (mode === 'caesar') {
-        btnCaesar.className = "py-1 px-2 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[11px]";
-        btnVig.className = "py-1 px-2 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[11px]";
+        btnCaesar.className = "py-1 px-1 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[10px]";
         cControls.classList.remove('hidden');
-        vControls.classList.add('hidden');
-      } else {
-        btnVig.className = "py-1 px-2 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[11px]";
-        btnCaesar.className = "py-1 px-2 rounded font-medium border border-slate-300 bg-white text-slate-700 text-[11px]";
+      } else if (mode === 'vigenere') {
+        btnVig.className = "py-1 px-1 rounded font-bold border border-slate-900 bg-slate-900 text-white text-[10px]";
         vControls.classList.remove('hidden');
-        cControls.classList.add('hidden');
+      } else if (mode === 'crack') {
+        btnCrack.className = "py-1 px-1 rounded font-bold border border-amber-800 bg-amber-800 text-white text-[10px]";
+        crControls.classList.remove('hidden');
+        cControls.classList.remove('hidden');
       }
       processCiphertext();
     }
@@ -969,57 +1039,114 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       processCiphertext();
     }
 
+    function loadCrackChallenge() {
+      // Ciphertext generated from "SISTEM KEAMANAN SIBER KRIPTOGRAFI" with shift +7
+      document.getElementById('plain-input').value = "ZPZALT RTHTHUHU ZPILY DYPWAVNYA3P";
+      document.getElementById('shift-range').value = 0;
+      updateCaesarShift(0);
+      showToast("Misi Dimulai!", "Gunakan slider shift K hingga ciphertext berubah menjadi frasa bahasa Indonesia yang bermakna!", "warning");
+    }
+
     function processCiphertext() {
-      const input = document.getElementById('plain-input').value.toUpperCase().replace(/[^A-Z]/g, '');
+      const input = document.getElementById('plain-input').value.toUpperCase();
       let output = "";
 
-      if (currentCipherMode === 'caesar') {
+      if (currentCipherMode === 'caesar' || currentCipherMode === 'crack') {
         for (let i = 0; i < input.length; i++) {
-          const code = input.charCodeAt(i) - 65;
-          const cipherCode = (code + currentCaesarShift) % 26;
-          output += String.fromCharCode(cipherCode + 65);
+          const char = input.charAt(i);
+          if (char >= 'A' && char <= 'Z') {
+            const code = input.charCodeAt(i) - 65;
+            const cipherCode = (code + currentCaesarShift) % 26;
+            output += String.fromCharCode(cipherCode + 65);
+          } else {
+            output += char;
+          }
         }
       } else { // Vigenere
         const key = document.getElementById('vigenere-key').value.toUpperCase().replace(/[^A-Z]/g, '') || "A";
+        let keyIdx = 0;
         for (let i = 0; i < input.length; i++) {
-          const pCode = input.charCodeAt(i) - 65;
-          const kCode = key.charCodeAt(i % key.length) - 65;
-          const cipherCode = (pCode + kCode) % 26;
-          output += String.fromCharCode(cipherCode + 65);
-        }
-        // Rotate wheel visual to last key letter shift
-        if (key.length > 0) {
-          const lastKeyShift = key.charCodeAt(0) - 65;
-          const angle = (lastKeyShift * (360 / 26));
-          document.getElementById('inner-wheel-group').style.transform = `rotate(-${angle}deg)`;
-          document.getElementById('inner-wheel-group').style.transformOrigin = "100px 100px";
+          const char = input.charAt(i);
+          if (char >= 'A' && char <= 'Z') {
+            const pCode = char.charCodeAt(0) - 65;
+            const kCode = key.charCodeAt(keyIdx % key.length) - 65;
+            const cipherCode = (pCode + kCode) % 26;
+            output += String.fromCharCode(cipherCode + 65);
+            keyIdx++;
+          } else {
+            output += char;
+          }
         }
       }
+
       document.getElementById('cipher-output').innerText = output || "---";
+      calculateFrequencyAnalysis(output);
+    }
+
+    function calculateFrequencyAnalysis(text) {
+      const total = text.replace(/[^A-Z]/g, '').length;
+      if(total === 0) return;
+
+      const vowels = ['A', 'E', 'I', 'O', 'U'];
+      let freqStr = "";
+
+      vowels.forEach(v => {
+        const count = (text.split(v).length - 1);
+        const pct = Math.round((count / total) * 100);
+        freqStr += `${v}:${pct}% `;
+      });
+
+      const freqEl = document.getElementById('freq-analysis-bar');
+      if(freqEl) freqEl.innerText = freqStr;
     }
 
 
-    // --- SIMULASI 6: KEY EXCHANGE LOGIC ---
-    let keySimMode = 'symmetric';
-    let keyStep = 0;
+    // --- ENHANCED SIMULASI 6 LOGIC: HYBRID & MITM ATTACK LAB ---
+    let keySimMode = 'dh';
 
     function setKeySimMode(mode) {
       keySimMode = mode;
-      keyStep = 0;
-      const bSym = document.getElementById('btn-key-sym');
-      const bAsym = document.getElementById('btn-key-asym');
+      const bDH = document.getElementById('btn-key-dh');
+      const bHybrid = document.getElementById('btn-key-hybrid');
+      const bMitM = document.getElementById('btn-key-mitm');
 
-      if (mode === 'symmetric') {
-        bSym.className = "flex-1 py-1.5 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold text-xs";
-        bAsym.className = "flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs";
-      } else {
-        bAsym.className = "flex-1 py-1.5 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold text-xs";
-        bSym.className = "flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs";
+      const dhPanel = document.getElementById('dh-panel');
+      const diagramPanel = document.getElementById('diagram-panel');
+      const actBar = document.getElementById('sim6-action-bar');
+      const statusText = document.getElementById('sim6-status-text');
+
+      bDH.className = "flex-1 py-1 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium";
+      bHybrid.className = "flex-1 py-1 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium";
+      bMitM.className = "flex-1 py-1 rounded-lg border border-slate-300 bg-amber-50 text-amber-900 font-bold";
+
+      if (mode === 'dh') {
+        bDH.className = "flex-1 py-1 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold";
+        dhPanel.classList.remove('hidden');
+        diagramPanel.classList.add('hidden');
+        statusText.innerText = "Mode Diffie-Hellman: Perhitungan Kunci Bersama S tanpa mengirim kunci asli.";
+        actBar.innerHTML = `<button onclick="calculateDHSymmetricKey()" class="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg">[Jalankan Kalkulasi Matematis $S = B^a \bmod p$]</button>`;
+      } else if (mode === 'hybrid') {
+        bHybrid.className = "flex-1 py-1 rounded-lg border border-slate-900 bg-slate-900 text-white font-bold";
+        dhPanel.classList.add('hidden');
+        diagramPanel.classList.remove('hidden');
+        renderHybridSSLHandshake();
+      } else if (mode === 'mitm') {
+        bMitM.className = "flex-1 py-1 rounded-lg border border-amber-800 bg-amber-800 text-white font-bold";
+        dhPanel.classList.add('hidden');
+        diagramPanel.classList.remove('hidden');
+        renderMitMInterception();
       }
-      renderKeyExchangeStep();
     }
 
-    function renderKeyExchangeStep() {
+    function calculateDHSymmetricKey() {
+      // p=23, g=5, a=6, b=15. A=8, B=19. S = 19^6 mod 23 = 2
+      const resBox = document.getElementById('dh-result-box');
+      resBox.className = "p-2 bg-emerald-800 text-white rounded text-center font-mono text-[11px] font-bold";
+      resBox.innerText = "SUKSES! Kunci Rahasia Bersama (S) = 2. Eve tidak bisa menghitung S tanpa nilai 'a' atau 'b'!";
+      showToast("DH Key Exchange Sukses", "Sebab logaritma diskrit sangat sulit dihitung secara acak oleh penyadap.", "success");
+    }
+
+    function renderHybridSSLHandshake() {
       const aBox = document.getElementById('alice-key-box');
       const bBox = document.getElementById('bob-key-box');
       const chBox = document.getElementById('channel-anim-box');
@@ -1027,62 +1154,35 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       const actBar = document.getElementById('sim6-action-bar');
       const statusText = document.getElementById('sim6-status-text');
 
-      if (keySimMode === 'symmetric') {
-        aBox.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-200 border border-slate-400 rounded text-slate-900">Key 'A'</span>`;
-        bBox.innerHTML = `<span class="text-slate-400 font-italic">Belum Ada Kunci</span>`;
-        chBox.innerHTML = `Pesan Terenkripsi`;
-        eveText.innerText = "Mengintip...";
-        eveText.className = "font-mono font-bold text-slate-700";
-
-        if (keyStep === 0) {
-          statusText.innerText = "Langkah 1: Alice membuat Kunci Simetris 'A'.";
-          actBar.innerHTML = `<button onclick="nextKeyStep(1)" class="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg">[Kirim Kunci 'A' via Public Channel]</button>`;
-        } else if (keyStep === 1) {
-          bBox.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-200 border border-slate-400 rounded text-slate-900">Key 'A'</span>`;
-          chBox.innerHTML = `<span class="text-rose-600 font-bold">[DISADAP EVE] Key 'A'</span>`;
-          eveText.innerText = "BERHASIL MENCURI KUNCI 'A'! (Shared Secret Compromised)";
-          eveText.className = "font-mono font-bold text-rose-600";
-          statusText.innerText = "RISIKO: Eve menduplikasi Kunci 'A' di publik channel & bisa membaca semua pesan!";
-          actBar.innerHTML = `<button onclick="nextKeyStep(0)" class="w-full py-1.5 bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg">Reset Simulasi Simetris</button>`;
-        }
-      } else { // Asymmetric
-        if (keyStep === 0) {
-          aBox.innerHTML = `<span class="text-slate-400 font-italic">Menunggu Kunci Bob</span>`;
-          bBox.innerHTML = `<span class="px-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">PubK</span> <span class="px-1 bg-rose-100 text-rose-800 border border-rose-300 rounded">PrivK</span>`;
-          chBox.innerHTML = `Bob Membuat Pasangan Kunci`;
-          eveText.innerText = "Melihat pembuatan kunci...";
-          eveText.className = "font-mono font-bold text-slate-700";
-          statusText.innerText = "Langkah 1: Bob membuat Public Key (Hijau) & Private Key (Merah).";
-          actBar.innerHTML = `<button onclick="nextKeyStep(1)" class="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg">[Bob Kirim Public Key ke Alice]</button>`;
-        } else if (keyStep === 1) {
-          aBox.innerHTML = `<span class="px-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">PubK Bob</span>`;
-          bBox.innerHTML = `<span class="px-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">PubK</span> <span class="px-1 bg-rose-100 text-rose-800 border border-rose-300 rounded">PrivK</span>`;
-          chBox.innerHTML = `<span class="text-emerald-700 font-bold">Public Key (Hijau) Transmit</span>`;
-          eveText.innerText = "Eve melihat Public Key (TIDAK BERBAHAYA)";
-          eveText.className = "font-mono font-bold text-emerald-600";
-          statusText.innerText = "Langkah 2: Alice menerima Public Key Bob. Eve melihat kunci publik ini tetapi aman.";
-          actBar.innerHTML = `<button onclick="nextKeyStep(2)" class="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg">[Alice Enkripsi & Kirim Ciphertext]</button>`;
-        } else if (keyStep === 2) {
-          aBox.innerHTML = `<span class="px-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">PubK Bob</span>`;
-          bBox.innerHTML = `<span class="px-1 bg-rose-100 text-rose-800 border border-rose-300 rounded">PrivK</span> $\\rightarrow$ Decrypted!`;
-          chBox.innerHTML = `<span class="text-slate-800 font-bold">[CIPHERTEXT] 8F90B2...</span>`;
-          eveText.innerText = "EVE GAGAL DEKRIPSI! (Tidak Punya Private Key Merah)";
-          eveText.className = "font-mono font-bold text-emerald-600";
-          statusText.innerText = "AMAN: Eve menyadap ciphertext tetapi tidak bisa membaca pesan tanpa Private Key Bob!";
-          actBar.innerHTML = `<button onclick="nextKeyStep(0)" class="w-full py-1.5 bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg">Reset Simulasi Asimetris</button>`;
-        }
-      }
+      aBox.innerHTML = `<span class="px-1 bg-emerald-100 text-emerald-800 rounded">Encrypted AES</span>`;
+      bBox.innerHTML = `<span class="px-1 bg-slate-200 rounded">RSA Private</span>`;
+      chBox.innerHTML = `<span class="text-emerald-700 font-bold">HTTPS SSL Handshake</span>`;
+      eveText.innerText = "Eve gagal membaca data (Data terenkripsi AES-256)";
+      eveText.className = "font-mono font-bold text-emerald-700";
+      statusText.innerText = "Mode HTTPS Hybrid: Enkripsi RSA untuk bertukar kunci AES, enkripsi data dengan AES.";
+      actBar.innerHTML = `<button onclick="showToast('SSL Valid', 'Sertifikat terverifikasi oleh Root CA terpercaya.', 'success')" class="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg">[Verifikasi Handshake SSL/TLS]</button>`;
     }
 
-    function nextKeyStep(step) {
-      keyStep = step;
-      renderKeyExchangeStep();
+    function renderMitMInterception() {
+      const aBox = document.getElementById('alice-key-box');
+      const bBox = document.getElementById('bob-key-box');
+      const chBox = document.getElementById('channel-anim-box');
+      const eveText = document.getElementById('eve-status-text');
+      const actBar = document.getElementById('sim6-action-bar');
+      const statusText = document.getElementById('sim6-status-text');
+
+      aBox.innerHTML = `<span class="px-1 bg-amber-100 text-amber-900 font-bold rounded">Peringatan Browser</span>`;
+      bBox.innerHTML = `<span class="px-1 bg-slate-200 rounded">PubK Bob</span>`;
+      chBox.innerHTML = `<span class="text-rose-600 font-bold">[EVE INJECTED FAKE CERT]</span>`;
+      eveText.innerText = "SERANGAN MITM: Eve menyuntikkan Fake Public Key!";
+      eveText.className = "font-mono font-bold text-rose-600";
+      statusText.innerText = "SERANGAN DETEKSI: Browser memblokir koneksi karena Fingerprint Sertifikat Eve tidak terdaftar di CA!";
+      actBar.innerHTML = `<button onclick="showToast('MitM Blocked!', 'Peringatan SSL Error: NET::ERR_CERT_AUTHORITY_INVALID dikirim ke Klien.', 'warning')" class="w-full py-1.5 bg-amber-800 text-white text-xs font-bold rounded-lg">[Deteksi & Blokir Serangan Eve]</button>`;
     }
 
 
-    // --- SIMULASI 7: HASHING & AVALANCHE EFFECT LOGIC ---
+    // --- ENHANCED SIMULASI 7 LOGIC: QUANTITATIVE AVALANCHE EFFECT & SALT ---
     function simpleHashMD5(str) {
-      // Lightweight mock MD5 hex string generator for demonstration
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
         hash = (hash << 5) - hash + str.charCodeAt(i);
@@ -1101,15 +1201,27 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
     }
 
+    function hexToBinary(hexStr) {
+      let bin = "";
+      for(let i=0; i<hexStr.length; i++) {
+        bin += parseInt(hexStr.charAt(i), 16).toString(2).padStart(4, '0');
+      }
+      return bin;
+    }
+
     async function calculateHashes() {
       const docA = document.getElementById('doc-a-text').value;
       const docB = document.getElementById('doc-b-text').value;
+      const salt = document.getElementById('salt-input').value;
 
-      const md5A = simpleHashMD5(docA);
-      const md5B = simpleHashMD5(docB);
+      const saltA = docA + salt;
+      const saltB = docB + salt;
 
-      const shaA = await hashSHA256(docA);
-      const shaB = await hashSHA256(docB);
+      const md5A = simpleHashMD5(saltA);
+      const md5B = simpleHashMD5(saltB);
+
+      const shaA = await hashSHA256(saltA);
+      const shaB = await hashSHA256(saltB);
 
       document.getElementById('hash-md5-a').innerText = md5A;
       document.getElementById('hash-md5-b').innerText = md5B;
@@ -1117,13 +1229,22 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       document.getElementById('hash-sha256-a').innerText = shaA;
       document.getElementById('hash-sha256-b').innerText = shaB;
 
-      const statusBadge = document.getElementById('hash-match-status');
+      // Calculate Hamming Distance between Binary SHA256 A & B
+      const binA = hexToBinary(shaA);
+      const binB = hexToBinary(shaB);
+      let diffBits = 0;
+      for(let i = 0; i < binA.length; i++) {
+        if(binA[i] !== binB[i]) diffBits++;
+      }
+      const avalanchePct = ((diffBits / 256) * 100).toFixed(1);
+
+      const badge = document.getElementById('avalanche-percentage-badge');
       if (docA === docB) {
-        statusBadge.className = "px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-200";
-        statusBadge.innerText = "MATCH (INTEGRITY SAFE)";
+        badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-200";
+        badge.innerText = "Dokumen Identik (0.0% Bit Change)";
       } else {
-        statusBadge.className = "px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-rose-100 text-rose-800 border border-rose-200";
-        statusBadge.innerText = "INTEGRITY VIOLATED (MODIFIED)";
+        badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-slate-900 text-white";
+        badge.innerText = `Avalanche Effect: ${avalanchePct}% Bit Changed (${diffBits}/256 Bits)`;
       }
     }
 
@@ -1133,39 +1254,73 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
     }
 
 
-    // --- SIMULASI 8: DIGITAL SIGNATURE LOGIC ---
-    let isDocTampered = false;
+    // --- ENHANCED SIMULASI 8 LOGIC: PKI CHAIN OF TRUST & MULTI-TAMPERING ---
+    let tamperState = { nominal: false, nama: false };
+    let isRevokedCRL = false;
 
-    function tamperDocument() {
-      isDocTampered = !isDocTampered;
-      const nomEl = document.getElementById('doc-nominal-val');
-      if (isDocTampered) {
-        nomEl.innerText = "Rp 50.000.000";
-        nomEl.className = "font-bold bg-rose-100 text-rose-800 px-1 border border-rose-300";
-        showToast("Dokumen Diedit!", "Nominal dokumen diubah secara ilegal menjadi Rp 50.000.000.", "warning");
-      } else {
-        nomEl.innerText = "Rp 5.000.000";
-        nomEl.className = "font-bold bg-slate-100 px-1 border border-slate-300";
-        showToast("Dikembalikan", "Isi dokumen dikembalikan ke bentuk asli.", "info");
+    function toggleTamperField(field) {
+      if(field === 'nominal') {
+        tamperState.nominal = !tamperState.nominal;
+        const nomEl = document.getElementById('doc-nominal-val');
+        if (tamperState.nominal) {
+          nomEl.innerText = "Rp 50.000.000";
+          nomEl.className = "font-bold bg-rose-100 text-rose-800 px-1 border border-rose-300";
+          showToast("Nominal Tampered!", "Nominal diubah menjadi Rp 50.000.000 secara ilegal.", "warning");
+        } else {
+          nomEl.innerText = "Rp 5.000.000";
+          nomEl.className = "font-bold bg-slate-100 px-1 border border-slate-300";
+        }
+      } else if(field === 'nama') {
+        tamperState.nama = !tamperState.nama;
+        const namaEl = document.getElementById('doc-nama-val');
+        if (tamperState.nama) {
+          namaEl.innerText = "Peretas Komputer";
+          namaEl.className = "font-bold bg-rose-100 text-rose-800 px-1 border border-rose-300";
+          showToast("Nama Tampered!", "Nama penerima diganti menjadi Peretas Komputer.", "warning");
+        } else {
+          namaEl.innerText = "Siswa Berprestasi TKJ";
+          namaEl.className = "font-bold bg-slate-100 px-1 border border-slate-300";
+        }
       }
-      verifyDigitalSignature();
+      verifyPKISignature();
     }
 
-    function verifyDigitalSignature() {
+    function toggleRevocationStatus() {
+      isRevokedCRL = !isRevokedCRL;
+      const btn = document.getElementById('btn-crl-toggle');
+      if(isRevokedCRL) {
+        btn.className = "w-full py-0.5 px-1 bg-rose-800 text-white rounded font-bold text-[9px] text-left truncate";
+        btn.innerHTML = `<i class="fa-solid fa-ban mr-1"></i> [Sertifikat REVOKED]`;
+        showToast("CRL Activated", "Sertifikat penanda tangan dicabut oleh Root CA!", "warning");
+      } else {
+        btn.className = "w-full py-0.5 px-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-900 rounded font-bold text-[9px] text-left truncate";
+        btn.innerHTML = `<i class="fa-solid fa-ban mr-1"></i> [Cabut Sertifikat (CRL)]`;
+      }
+      verifyPKISignature();
+    }
+
+    function verifyPKISignature() {
       const stampText = document.getElementById('stamp-status-text');
       const stampIcon = document.getElementById('stamp-badge-icon');
       const statusText = document.getElementById('sim8-status-text');
 
-      if (!isDocTampered) {
-        stampText.innerText = "VALID SIGNATURE ✓";
-        stampText.className = "text-[10px] font-bold text-emerald-700 font-mono";
-        stampIcon.className = "w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 text-sm";
-        statusText.innerText = "Verifikasi Sukses: Hash dokumen cocok dengan Public Key penanda tangan.";
-      } else {
+      const isTampered = tamperState.nominal || tamperState.nama;
+
+      if (isRevokedCRL) {
+        stampText.innerText = "REVOKED CERTIFICATE ✕";
+        stampText.className = "text-[10px] font-bold text-rose-700 font-mono";
+        stampIcon.className = "w-7 h-7 rounded-full bg-rose-100 border border-rose-300 flex items-center justify-center text-rose-800 text-xs";
+        statusText.innerText = "AUDIT GAGAL: Sertifikat penerbit tercatat pada Certificate Revocation List (CRL).";
+      } else if (isTampered) {
         stampText.innerText = "INVALID / TAMPERED ✕";
         stampText.className = "text-[10px] font-bold text-rose-700 font-mono";
-        stampIcon.className = "w-8 h-8 rounded-full bg-rose-100 border border-rose-300 flex items-center justify-center text-rose-800 text-sm";
-        statusText.innerText = "VERIFIKASI GAGAL! Isi dokumen diubah setelah proses penandatanganan.";
+        stampIcon.className = "w-7 h-7 rounded-full bg-rose-100 border border-rose-300 flex items-center justify-center text-rose-800 text-xs";
+        statusText.innerText = "AUDIT GAGAL: Isi dokumen diubah! Hash dokumen baru tidak cocok dengan digital signature.";
+      } else {
+        stampText.innerText = "VALID SIGNATURE ✓";
+        stampText.className = "text-[10px] font-bold text-emerald-700 font-mono";
+        stampIcon.className = "w-7 h-7 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 text-xs";
+        statusText.innerText = "AUDIT SUKSES: Dokumen otentik, hash terverifikasi, dan Sertifikat PKI Aktif.";
       }
     }
 
@@ -1179,34 +1334,34 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
         const plain = document.getElementById('plain-input').value;
         const cipher = document.getElementById('cipher-output').innerText;
         logEntry = {
-          modul: "Simulasi 5: Caesar & Vigenère Wheel",
-          param: `Modus: ${mode}, Plain: '${plain}'`,
-          hasil: `Ciphertext: ${cipher}`,
-          status: "PASS (Substitusi Valid)"
+          modul: "Simulasi 5: Cryptanalysis & Cipher Lab",
+          param: `Mode: ${mode}, Shift K: ${currentCaesarShift}`,
+          hasil: `Out: '${cipher.substring(0, 20)}...'`,
+          status: mode === 'CRACK' ? "PASS (Brute-Force Cracked)" : "PASS (Substitusi Valid)"
         };
       } else if (simNum === 6) {
         const mode = keySimMode.toUpperCase();
         logEntry = {
-          modul: "Simulasi 6: Key Exchange Protocol",
-          param: `Protokol Enkripsi: ${mode}`,
-          hasil: mode === 'SYMMETRIC' ? "Shared Secret Key Disadap Eve" : "Public Key Safe, Private Key Secure",
-          status: mode === 'SYMMETRIC' ? "RISK (Key Hijacked)" : "PASS (Asymmetric Secure)"
+          modul: "Simulasi 6: Diffie-Hellman & MitM Lab",
+          param: `Protokol: ${mode}`,
+          hasil: mode === 'MITM' ? "Interupsi Fake Cert Eve Dideteksi" : "Kunci Bersama S=2 Terkalkulasi",
+          status: mode === 'MITM' ? "BLOCKED (MitM Mitigated)" : "PASS (Secure Handshake)"
         };
       } else if (simNum === 7) {
-        const status = document.getElementById('hash-match-status').innerText;
+        const badgeText = document.getElementById('avalanche-percentage-badge').innerText;
         logEntry = {
-          modul: "Simulasi 7: Checksum & Avalanche Effect",
-          param: "Modifikasi 1 Karakter Dokumen B",
-          hasil: `Hash SHA-256 100% Berubah Total`,
-          status: status.includes("MATCH") ? "PASS (Original Match)" : "PASS (Avalanche Detected)"
+          modul: "Simulasi 7: Forensic Hash & Salt Lab",
+          param: `Salt: '${document.getElementById('salt-input').value}'`,
+          hasil: badgeText,
+          status: badgeText.includes("Identik") ? "PASS (Original)" : "PASS (Avalanche Measured)"
         };
       } else if (simNum === 8) {
-        const isTampered = isDocTampered;
+        const isTampered = tamperState.nominal || tamperState.nama;
         logEntry = {
-          modul: "Simulasi 8: Digital Signature Verifier",
-          param: `Uji Tampering Data Dokumen`,
-          hasil: isTampered ? "INVALID / TAMPERED (Hash Mismatch)" : "VALID SIGNATURE (Authenticated)",
-          status: isTampered ? "TAMPER DETECTED" : "PASS (Verified)"
+          modul: "Simulasi 8: PKI Chain & Forensics Lab",
+          param: `Tamper: ${isTampered ? 'YES' : 'NO'}, CRL Revoked: ${isRevokedCRL ? 'YES' : 'NO'}`,
+          hasil: isRevokedCRL ? "Sertifikat Dicabut (Revoked)" : (isTampered ? "Hash Mismatch (Data Tampered)" : "PKI Chain Valid"),
+          status: (isTampered || isRevokedCRL) ? "FAIL (Tampered/Revoked)" : "PASS (Verified PKI)"
         };
       }
 
@@ -1231,7 +1386,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
 
       tableData.forEach((row, idx) => {
         let badgeColor = "bg-slate-100 text-slate-800 border border-slate-200";
-        if (row.status.includes("RISK") || row.status.includes("TAMPER")) badgeColor = "bg-rose-50 text-rose-800 border border-rose-200";
+        if (row.status.includes("FAIL") || row.status.includes("BLOCKED")) badgeColor = "bg-amber-100 text-amber-900 border border-amber-300";
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
@@ -1454,7 +1609,7 @@ SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
       initDatabaseSiswa();
       renderQuiz();
       initCryptoWheel();
-      setKeySimMode('symmetric');
+      setKeySimMode('dh');
       calculateHashes();
     };
   </script>
